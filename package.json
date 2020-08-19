@@ -1,0 +1,24 @@
+{
+  "name": "20200813",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack --config ./webpack/webpack.dev.js --watch",
+    "prod": "webpack --config ./webpack/webpack.prod.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/file-loader": "4.2.0",
+    "@types/node": "14.0.27",
+    "copy-webpack-plugin": "6.0.3",
+    "file-loader": "6.0.0",
+    "ts-loader": "8.0.2",
+    "typescript": "3.9.7",
+    "webpack": "4.44.1",
+    "webpack-cli": "3.3.12",
+    "webpack-merge": "5.1.1"
+  }
+}
