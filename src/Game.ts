@@ -45,7 +45,7 @@ export default class Game {
 
 		// init draw setting
 		this._fpsInterval = 1000 / MAX_FPS;
-		this._then = Date.now();
+		this._then = performance.now();
 
 		// load sprite
 		this._sprite = new Image();
@@ -87,7 +87,7 @@ export default class Game {
 		// request another frame
 		requestAnimationFrame(() => {this.draw();});
 		
-		this._now = Date.now();
+		this._now = performance.now();
 		this._elapsed = this._now - this._then;
 
 		// fpsInterval 이상의 시간이 지나면 프레임을 하나 받은 것으로 취급
@@ -113,7 +113,7 @@ export default class Game {
 	}
 
 	private drawDebugCounter() {
-		let debugText = `${this._elapsed.toFixed(2)}ms per frame`;
+		let debugText = `${(1000 / this._elapsed).toFixed(2)}fps `;
 		debugText += `right: ${this._gameData.keyState.arrow_right}`;
 		let ctx = this._ctx;
 
