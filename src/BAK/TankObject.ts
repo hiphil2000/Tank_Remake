@@ -1,6 +1,7 @@
-import GameObject, { SpriteData, Position } from "./GameObject";
-import { SPRITE_DEFINITION } from "./Sprite";
+import GameObject, { SpriteData, Position, Heading } from "./GameObject";
+import { SPRITE_DEFINITION } from "./SpriteDefinition";
 import { KeyState } from "./GameData";
+import Game from "./Game";
 
 
 export interface tankDefType {
@@ -35,24 +36,50 @@ export default class TankObject extends GameObject {
 	private _tankSprites: DirectionalPosition;
 	private _spritePosition: number;
 	
-	constructor(id: string, spriteImage: HTMLImageElement, tankType: TankType, initialPosition?: Position) {
+	constructor(id: string, game: Game, spriteImage: HTMLImageElement, tankType: TankType, initialPosition?: Position) {
 		console.log(tankType.color);
 		let tankSprites = SPRITE_DEFINITION.tank[tankType.level][tankType.color];
 		let spriteData: SpriteData = {
 			spriteImage: spriteImage,
 			spritePosition: tankSprites.up
 		};
-		super(id, spriteData, initialPosition);
+		super(id, game, spriteData, initialPosition);
 		
 		this._tankSprites = tankSprites;
 		this._spritePosition = 0;
 	}
 
 	move(keyState: KeyState): boolean {
-		let moved = super.move(keyState);
-		if (moved) {
+		let original = deepClone(this.position) as Position;
+
+		// update data first
+		let moved = false;
+		if (keyState.arrow_right) {
+			this.position.x++;
+			this.position.heading = Heading.right;
+			moved = true;
+		} else if (keyState.arrow_left) {
+			this.position.x--;
+			this.position.heading = Heading.left;
+			moved = true;
+		} else if (keyState.arrow_up) {
+			this.position.y--;
+			this.position.heading = Heading.up;
+			moved = true;
+		} else if (keyState.arrow_down) {
+			this.position.y++;
+			this.position.heading = Heading.down;
+			moved = true;
+		}
+
+		let impact = this.game.impactTest(this);
+		if (moved && impact.length <= 0) {
+			// free to move
 			this._spritePosition = this._spritePosition + 1 > 1 ? 0 : this._spritePosition + 1;
-			console.log('move');
+		} else if (moved == false || (moved && impact.length > 0)) {
+			// not moved or blocked by other object
+			// then rollback position.
+			this.position = original;
 		}
 
 		return moved;

@@ -26,5 +26,10 @@ export const SPRITE_DEFINITION = {
 				right: 	[ { x: 96, y: 0, width: 16, height: 16 }, { x: 112, y: 0, width: 16, height: 16 } ]
 			}
 		}
-	]
+	],
+	object: {
+		brick: [
+			{ X: 256, y: 0, width: 16, height: 16 }
+		]
+	}
 }

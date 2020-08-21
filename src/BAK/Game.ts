@@ -3,6 +3,7 @@ import GameObject, { Heading } from "./GameObject";
 import { GameData } from "./GameData";
 import { debug } from "console";
 import TankObject, { TankColor } from "./TankObject";
+import { openStdin } from "process";
 
 export interface GameOptions {
 	screen: {
@@ -50,8 +51,10 @@ export default class Game {
 		// load sprite
 		this._sprite = new Image();
 		this._sprite.onload = () => {
+			//#region test data
 			this._gameData.objects.push(new TankObject(
 				"main",
+				this,
 				this._sprite,
 				{
 					color: TankColor.yellow,
@@ -65,6 +68,7 @@ export default class Game {
 					heading: Heading.up
 				}
 			));
+			//#endregion
 			this.draw();
 		}
 		this._sprite.src = SPRITE_IMAGE_SRC;
@@ -81,6 +85,25 @@ export default class Game {
 		document.addEventListener("keyup", ev => {
 			this._gameData.updateKeystate(ev.keyCode, false);
 		})
+	}
+
+	public impactTest(target: GameObject): Array<GameObject> {
+		let impactList: Array<GameObject> = [];
+
+		let others = this._gameData.objects.filter(object => {return object.id !== target.id});
+		others.forEach(object => {
+			let tPos = target.position;
+			let oPos = object.position;
+
+			if (tPos.x + tPos.width >= oPos.x &&
+				tPos.x <= oPos.x + oPos.width &&
+				tPos.y + tPos.height >= oPos.y &&
+				tPos.y <= oPos.y + oPos.height) {
+					impactList.push(object);
+				}
+		});
+
+		return impactList;
 	}
 
 	private draw() {

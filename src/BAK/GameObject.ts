@@ -1,13 +1,16 @@
 import { KeyState } from "./GameData";
+import Game from "./Game";
 
 export default abstract class GameObject {
 	id: string;
+	game: Game;
 	position: Position;
 	spriteData: SpriteData;
 
-	constructor(id: string, spriteData: SpriteData, initialPosition?: Position) {
+	constructor(id: string, game: Game, spriteData: SpriteData, initialPosition?: Position) {
 		this.id = id;
 		this.spriteData = spriteData;
+		this.game = game;
 		if (initialPosition != undefined) {
 			this.position = initialPosition;
 		} else {
@@ -28,26 +31,7 @@ export default abstract class GameObject {
 		}
 	}
 
-	move(keyState: KeyState): boolean {
-		if (keyState.arrow_right) {
-			this.position.x++;
-			this.position.heading = Heading.right;
-			return true;
-		} else if (keyState.arrow_left) {
-			this.position.x--;
-			this.position.heading = Heading.left;
-			return true;
-		} else if (keyState.arrow_up) {
-			this.position.y--;
-			this.position.heading = Heading.up;
-			return true;
-		} else if (keyState.arrow_down) {
-			this.position.y++;
-			this.position.heading = Heading.down;
-			return true;
-		}
-		return false;
-	}
+	abstract move(keyState: KeyState): boolean;
 	
 	abstract draw(context: CanvasRenderingContext2D): void;
 }
