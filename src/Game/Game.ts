@@ -6,7 +6,7 @@ import EGameType from "./GameData/EGameType";
 import ILevel from "./Level/ILevel";
 import EDirection, { EDirectionToEKeys } from "../Utils/EDirection";
 import IKeyState from "./InputManage/IKeyState";
-import EKeys from "./InputManage/EKeys";
+import EKeys, { EKeysToEDirection } from "./InputManage/EKeys";
 
 export const MAIN_TANK_ID = 'MAIN';
 
@@ -15,7 +15,7 @@ export default class Game {
 	private _gameData: IGameData;
 	private _keyState: IKeyState;
 
-	constructor(screen: HTMLCanvasElement) {
+	constructor(screen: HTMLCanvasElement, spriteSrc: string) {
 		this.newGame(EGameType.PVE, null, []);
 		this._gameData.objects.push(new TankObject(
 			this,
@@ -25,9 +25,10 @@ export default class Game {
 			3,
 			MAIN_TANK_ID
 		));
-
-		this._renderer = new Renderer(this, screen, './js/sprite.png');
+		
+		this._renderer = new Renderer(this, screen, spriteSrc);
 		this.initializeInputs();
+		screen.focus();
 		// this.showTitle();
 	}
 
@@ -36,30 +37,20 @@ export default class Game {
 		document.addEventListener('keydown', ev => {
 			let mainTank = this.mainTank;
 			switch (ev.code) {
-				case 'ArrowUp':
-					if (mainTank)
-						mainTank.direction = EDirection.up;
-						this.resetArrowInput();
-						this._keyState[ev.code] = true;
-						break;
-				case 'ArrowRight':
-					if (mainTank)
-						mainTank.direction = EDirection.right;
-						this.resetArrowInput();
-						this._keyState[ev.code] = true;
-						break;
-				case 'ArrowDown':
-					if (mainTank)
-						mainTank.direction = EDirection.down;
-						this.resetArrowInput();
-						this._keyState[ev.code] = true;
-						break;
-				case 'ArrowLeft':
-					if (mainTank)
-						mainTank.direction = EDirection.left;
-						this.resetArrowInput();
-						this._keyState[ev.code] = true;
-						break;
+				case EKeys.arrow_up:
+				case EKeys.arrow_right:
+				case EKeys.arrow_down:
+				case EKeys.arrow_left:
+					if (mainTank) {
+						mainTank.direction = EKeysToEDirection(ev.code as EKeys);
+					}
+					this.resetArrowInput();
+					this._keyState[ev.code] = true;
+					break;
+				case EKeys.spacebar:
+					break;
+				case EKeys.esc:
+					break;
 			}
 		});
 		document.addEventListener('keyup', ev => {

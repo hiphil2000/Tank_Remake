@@ -19,9 +19,6 @@ export const DRAWING_CONST = {
 			bottom: 10,
 			right: 32
 		}
-	},
-	debug: {
-
 	}
 }
 
