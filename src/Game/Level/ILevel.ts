@@ -1,7 +1,7 @@
-import Object from "../Object/Object";
+import GameObject from "../Object/GameObject";
 
 export default interface ILevel {
 	levelId: string,
 	levelName: string,
-	levelObjects: Array<Array<Object>>
+	levelObjects: Array<Array<GameObject>>
 }

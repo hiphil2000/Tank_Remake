@@ -2,14 +2,15 @@ import { Point } from "../../Utils/UnitTypes";
 import Game from "../Game";
 import EObjectType from "./EObjectType";
 
-export default abstract class Object {
-	private _game: Game;
-	private _objectType: EObjectType;
-	private _positon: Point;
+export default abstract class GameObject {
+	public readonly id: string | undefined;
+	public readonly objectType: EObjectType;
+	protected _game: Game;
+	protected _positon: Point;
 
-	constructor(game: Game, objectType: EObjectType, position?: Point) {
+	constructor(game: Game, objectType: EObjectType, position?: Point, id?: string) {
 		this._game = game;
-		this._objectType = objectType;
+		this.objectType = objectType;
 		if (position != undefined) {
 			this._positon = position;
 		} else {
@@ -17,6 +18,9 @@ export default abstract class Object {
 				x: 0,
 				y: 0
 			};
+		}
+		if (id != undefined) {
+			this.id = id;
 		}
 	}
 
@@ -30,9 +34,5 @@ export default abstract class Object {
 		}
 
 		this._positon = position;
-	}
-
-	get objectType(): EObjectType {
-		return this._objectType;
 	}
 }
