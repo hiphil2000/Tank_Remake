@@ -3,7 +3,7 @@ import Game from "../Game";
 import EObjectType from "./EObjectType";
 import MovingObject, { calculateMove } from "./MovingObject";
 import EDirection from "../../Utils/EDirection";
-import BulletObject from "./BulletObject";
+import BulletObject, { BULLET_SLOW, BULLET_FAST } from "./BulletObject";
 import SPRTIE_DEF, { SpriteDef } from "../../Render/Sprite/SpriteDefinition";
 import { Guid, deepClone } from "../../Utils/Utils";
 
@@ -61,12 +61,15 @@ export default class TankObject extends MovingObject {
 	}
 
 	public fire() {
-		if (this._bullets.length <= this.tankLevel + 1) {
-			this.createBullet();
-		}
+		this.createBullet();
 	}
 
 	protected createBullet() {
+		if (this.tankLevel < 2 && this._bullets.length >= 1) {
+			return;
+		} else if (this.tankLevel < 4 && this._bullets.length >= 2) {
+			return;
+		}
 		let position: Point;
 		let tankSprite = SPRTIE_DEF.TANK[this.tankColor][this.tankLevel][this.direction][this.spritePosition];
 		let bulletSprite = SPRTIE_DEF.BULLET[this.direction];
@@ -97,11 +100,18 @@ export default class TankObject extends MovingObject {
 				break;
 		}
 
+		let bulletSpeed: number;
+		if (this.tankLevel == 0) {
+			bulletSpeed = BULLET_SLOW
+		} else if (this.tankLevel < 4) {
+			bulletSpeed = BULLET_FAST
+		}
+
 		let bullet = new BulletObject(
 			this._game, this, 
 			position, 
 			this.direction, 
-			this.tankLevel + 1,
+			bulletSpeed,
 			Guid.newGuid()
 		);
 		

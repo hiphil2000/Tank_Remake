@@ -329,6 +329,88 @@ const SPRTIE_DEF = {
 
 	},
 	ANIMATION: {
+		EXPLOSION_SMALL: [
+			{
+				position: { x: 518, y: 260 },
+				size: { width: 22, height: 22 }
+			},
+			{
+				position: { x: 544, y: 258 },
+				size: { width: 30, height: 28 }
+			},
+			{
+				position: { x: 576, y: 256 },
+				size: { width: 32, height: 32 }
+			}
+		],
+		EXPLOSION_LARGE: [
+			{
+				position: { x: 610, y: 258 },
+				size: { width: 58, height: 58 }
+			},
+			{
+				position: { x: 668, y: 256 },
+				size: { width: 68, height: 64 }
+			}
+		],
+		INVINCIBLE: [
+			{
+				position: { x: 512, y: 288 },
+				size: { width: 32, height: 32 }
+			},
+			{
+				position: { x: 544, y: 288 },
+				size: { width: 32, height: 32 }
+			},
+		],
+		SPAWN: [
+			{
+				position: { x: 518, y: 198 },
+				size: { width: 18, height: 18 }
+			},
+			{
+				position: { x: 548, y: 196 },
+				size: { width: 22, height: 22 }
+			},
+			{
+				position: { x: 578, y: 194 },
+				size: { width: 26, height: 26 }
+			},
+			{
+				position: { x: 608, y: 192 },
+				size: { width: 30, height: 30 }
+			},
+		],
+		SCORE_100: [
+			{
+				position: { x: 580, y: 328 },
+				size: { width: 26, height: 14 }
+			},
+		],
+		SCORE_200: [
+			{
+				position: { x: 610, y: 328 },
+				size: { width: 26, height: 14 }
+			},
+		],
+		SCORE_300: [
+			{
+				position: { x: 642, y: 328 },
+				size: { width: 26, height: 14 }
+			},
+		],
+		SCORE_400: [
+			{
+				position: { x: 674, y: 328 },
+				size: { width: 26, height: 14 }
+			},
+		],
+		SCORE_500: [
+			{
+				position: { x: 706, y: 328 },
+				size: { width: 26, height: 14 }
+			},
+		]
 
 	},
 	ITEM: {

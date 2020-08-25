@@ -1,10 +1,12 @@
-import Game from "../Game/Game";
+import Game, { DEBUG } from "../Game/Game";
 import GameObject from "../Game/Object/GameObject";
 import EObjectType from "../Game/Object/EObjectType";
 import SPRTIE_DEF, { SpriteDef } from "./Sprite/SpriteDefinition";
 import TankObject from "../Game/Object/TankObject";
 import { Point, Size } from "../Utils/UnitTypes";
 import BulletObject from "../Game/Object/BulletObject";
+import AnimationObject from "../Game/Object/AnimationObject";
+import EAnimationType from "../Game/Object/EAnimationType";
 
 export const MAX_FPS = 60;
 export const DRAWING_CONST = {
@@ -19,6 +21,12 @@ export const DRAWING_CONST = {
 			top: 10,
 			bottom: 10,
 			right: 32
+		}
+	},
+	debug: {
+		font: {
+			size: 12,
+			font: 'san-serif'
 		}
 	}
 }
@@ -84,8 +92,27 @@ export default class Renderer {
 			let objects = this._game.getObjects();
 			if (objects){
 				objects.forEach(object => {
-					if (object.objectType === EObjectType.BULLET) {
-						(object as BulletObject).move();
+					switch(object.objectType) {
+						case EObjectType.BULLET:
+							(object as BulletObject).move();
+							break;
+						case EObjectType.ANIMATION:
+							let animation = object as AnimationObject;
+							if (animation.expireTime < this._fps.now) {
+								console.log(`ANIMATION ${animation.id} HAS BEEN EXPIRED. (exp: ${animation.expireTime}, now: ${this._fps.now})`);
+								animation.remove();
+							}
+							
+							if (animation.animationType === EAnimationType.INVINCIBLE) {
+								let tankSize = this.getSpriteData(this._game.mainTank).size;
+								animation.animationPoint = {
+									x: mainTank.position.x + tankSize.width / 2,
+									y: mainTank.position.y + tankSize.height / 2
+								};
+							}
+
+							animation.nextSpritePosition();
+							break;
 					}
 				})
 			}
@@ -101,11 +128,11 @@ export default class Renderer {
 			// draw backgrounds
 			this.drawBackground(ctx);
 
-			// draw objects
-			this.drawObjects(ctx, this._game.getObjects());
-
 			// draw frame
 			this.drawFrame(ctx);
+
+			// draw objects
+			this.drawObjects(ctx, this._game.getObjects());
 
 			// draw debug counter
 			this.drawDebugCounter(ctx);
@@ -146,17 +173,7 @@ export default class Renderer {
 
 		for(let i = 0; i < objects.length; i++) {
 			let object = objects[i];
-			let sprite;
-			switch(object.objectType) {
-				case EObjectType.TANK: 
-					let tank = object as TankObject;
-					sprite = SPRTIE_DEF.TANK[tank.tankColor][tank.tankLevel][tank.direction][tank.spritePosition];
-					break;
-				case EObjectType.BULLET:
-					let bullet = object as BulletObject;
-					sprite = SPRTIE_DEF.BULLET[bullet.direction];
-					break;
-			}
+			let sprite = this.getSpriteData(object);
 			if (sprite != null) {
 				ctx.drawImage(
 					this._sprite,
@@ -169,6 +186,19 @@ export default class Renderer {
 					sprite.size.width,
 					sprite.size.height
 				);
+			}
+			if (DEBUG) {
+				ctx.strokeStyle = '#FF0000';
+				ctx.strokeRect(
+					DRAWING_CONST.sizes.frame.left + object.position.x,
+					DRAWING_CONST.sizes.frame.top + object.position.y,
+					sprite.size.width,
+					sprite.size.height
+				);
+				this.drawText(ctx, `${object.id}`, {
+					x: DRAWING_CONST.sizes.frame.left + object.position.x,
+					y: DRAWING_CONST.sizes.frame.top + object.position.y - 1,
+				}, sprite.size.width);
 			}
 
 			ctx.restore();
@@ -187,7 +217,7 @@ export default class Renderer {
 		this.drawText(ctx, fps, {x: ctx.canvas.width - (ctx.measureText(fps).width * 1.35), y: 15});
 
 		let keyState = this._game.keyState;
-		this.drawText(ctx, `ArrowLeft: ${keyState.Space ? 'T' : 'F'}`, {x: 0, y: ctx.canvas.height});
+		this.drawText(ctx, `Space: ${keyState.Space ? 'T' : 'F'}`, {x: 0, y: ctx.canvas.height});
 		this.drawText(ctx, `ArrowLeft: ${keyState.ArrowLeft ? 'T' : 'F'}`, {x: 0, y: ctx.canvas.height - 15});
 		this.drawText(ctx, `ArrowDown: ${keyState.ArrowDown ? 'T' : 'F'}`, {x: 0, y: ctx.canvas.height - 30});
 		this.drawText(ctx, `ArrowRight: ${keyState.ArrowRight ? 'T' : 'F'}`, {x: 0, y: ctx.canvas.height - 45});
@@ -196,16 +226,16 @@ export default class Renderer {
 
 	}
 
-	private drawText(ctx: CanvasRenderingContext2D, text: string, position: Point) {
+	private drawText(ctx: CanvasRenderingContext2D, text: string, position: Point, maxWidth?: number) {
 		ctx.save();
 
-		ctx.font = '14px san-serif';
+		ctx.font = `${DRAWING_CONST.debug.font.size}px ${DRAWING_CONST.debug.font.font}`;
 		ctx.strokeStyle = 'white';
 		ctx.lineWidth = 2;
-		ctx.strokeText(text, position.x, position.y);
+		ctx.strokeText(text, position.x, position.y, maxWidth);
 
 		ctx.fillStyle = 'black';
-		ctx.fillText(text, position.x, position.y);
+		ctx.fillText(text, position.x, position.y, maxWidth);
 		
 		ctx.restore();
 
@@ -224,6 +254,9 @@ export default class Renderer {
 			case EObjectType.BULLET:
 				let bullet = object as BulletObject;
 				return SPRTIE_DEF.BULLET[bullet.direction];
+			case EObjectType.ANIMATION:
+				let animation = object as AnimationObject;
+				return SPRTIE_DEF.ANIMATION[animation.animationType][animation.spritePosition];
 		}
 	}
 	

@@ -10,8 +10,12 @@ import EKeys, { EKeysToEDirection } from "./InputManage/EKeys";
 import SPRTIE_DEF, { SpriteDef } from "../Render/Sprite/SpriteDefinition";
 import EObjectType from "./Object/EObjectType";
 import BulletObject from "./Object/BulletObject";
+import { Point } from "../Utils/UnitTypes";
+import AnimationObject from "./Object/AnimationObject";
+import EAnimationType from "./Object/EAnimationType";
 
 export const MAIN_TANK_ID = 'MAIN';
+export const DEBUG = true;
 
 export default class Game {
 	private _renderer: Renderer;
@@ -26,45 +30,6 @@ export default class Game {
 		this.newGame(EGameType.PVE, null, []);
 		// this.showTitle();
 	}
-	
-	//#region private methods
-	private initializeInputs() {
-		this._keyState = {} as IKeyState;
-		document.addEventListener('keydown', ev => {
-			let mainTank = this.mainTank;
-			switch (ev.code) {
-				case EKeys.arrow_up:
-				case EKeys.arrow_right:
-				case EKeys.arrow_down:
-				case EKeys.arrow_left:
-					if (mainTank) {
-						mainTank.direction = EKeysToEDirection(ev.code as EKeys);
-					}
-					this.resetArrowInput();
-					this._keyState[ev.code] = true;
-					break;
-				case EKeys.spacebar:
-					if (mainTank) {
-						mainTank.fire();
-					}
-					break;
-				case EKeys.esc:
-					break;
-			}
-		});
-		document.addEventListener('keyup', ev => {
-			let code = ev.code as EKeys;
-			this._keyState[code] = false;
-		})
-	}
-
-	private resetArrowInput() {
-		this._keyState.ArrowUp = false;
-		this._keyState.ArrowRight = false;
-		this._keyState.ArrowDown = false;
-		this._keyState.ArrowLeft = false;
-	}
-	//#endregion
 
 	//#region getter and setter
 	get keyState(): IKeyState {
@@ -188,19 +153,84 @@ export default class Game {
 			levelData: level,
 			objects: objects
 		} as IGameData
-		
+
+		this.createMainTank(
+			this._renderer.randomPoint({width: 32, height: 32}),
+			EDirection.up,
+			ETankColor.YELLOW,
+			0
+		);
+	}
+	//#endregion
+	
+	//#region private methods
+	private initializeInputs() {
+		this._keyState = {} as IKeyState;
+		document.addEventListener('keydown', ev => {
+			let mainTank = this.mainTank;
+			switch (ev.code) {
+				case EKeys.arrow_up:
+				case EKeys.arrow_right:
+				case EKeys.arrow_down:
+				case EKeys.arrow_left:
+					if (mainTank) {
+						mainTank.direction = EKeysToEDirection(ev.code as EKeys);
+					}
+					this.resetArrowInput();
+					this._keyState[ev.code] = true;
+					break;
+				case EKeys.spacebar:
+					if (mainTank) {
+						mainTank.fire();
+					}
+					this._keyState[ev.code] = true;
+					break;
+				case EKeys.esc:
+					this._keyState[ev.code] = true;
+					break;
+			}
+		});
+		document.addEventListener('keyup', ev => {
+			let code = ev.code as EKeys;
+			this._keyState[code] = false;
+		})
+	}
+
+	private resetArrowInput() {
+		this._keyState.ArrowUp = false;
+		this._keyState.ArrowRight = false;
+		this._keyState.ArrowDown = false;
+		this._keyState.ArrowLeft = false;
+	}
+
+	private createMainTank(position: Point, direction: EDirection, tankColor: ETankColor, tankLevel: number) {
 		if (this.mainTank) {
 			this.removeObject(this.mainTank);
 		}
 
 		this.insertObject(new TankObject(
 			this,
-			this._renderer.randomPoint({width: 32, height: 32}),
-			EDirection.right,
-			ETankColor.WHITE,
-			3,
+			position,
+			direction,
+			tankColor,
+			tankLevel,
 			MAIN_TANK_ID
+		));
+
+		let mainTank = this.mainTank;
+		let tankSize = this.getSprite(this.mainTank).size;
+		this.insertObject(new AnimationObject(
+			this,
+			EAnimationType.INVINCIBLE,
+			{
+				x: mainTank.position.x - tankSize.width / 2,
+				y: mainTank.position.y - tankSize.height / 2
+			},
+			3000,
+			25,
+			true
 		));
 	}
 	//#endregion
+	
 }
