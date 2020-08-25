@@ -1,4 +1,4 @@
-import Game from "./Game";
+import Game from "./Game/Game";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
