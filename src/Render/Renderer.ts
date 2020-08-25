@@ -1,4 +1,4 @@
-import Game, { DEBUG } from "../Game/Game";
+import Game from "../Game/Game";
 import GameObject from "../Game/Object/GameObject";
 import EObjectType from "../Game/Object/EObjectType";
 import SPRTIE_DEF, { SpriteDef } from "./Sprite/SpriteDefinition";
@@ -135,7 +135,9 @@ export default class Renderer {
 			this.drawObjects(ctx, this._game.getObjects());
 
 			// draw debug counter
-			this.drawDebugCounter(ctx);
+			if (this._game.debug) {
+				this.drawDebugCounter(ctx);
+			}
 		}
 	}
 
@@ -187,7 +189,7 @@ export default class Renderer {
 					sprite.size.height
 				);
 			}
-			if (DEBUG) {
+			if (this._game.debug) {
 				ctx.strokeStyle = '#FF0000';
 				ctx.strokeRect(
 					DRAWING_CONST.sizes.frame.left + object.position.x,

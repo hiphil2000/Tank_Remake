@@ -15,14 +15,15 @@ import AnimationObject from "./Object/AnimationObject";
 import EAnimationType from "./Object/EAnimationType";
 
 export const MAIN_TANK_ID = 'MAIN';
-export const DEBUG = true;
 
 export default class Game {
+	public debug: boolean;
 	private _renderer: Renderer;
 	private _gameData: IGameData;
 	private _keyState: IKeyState;
 
-	constructor(screen: HTMLCanvasElement, spriteSrc: string) {
+	constructor(screen: HTMLCanvasElement, spriteSrc: string, debug?: boolean) {
+		this.debug = debug;
 		this._renderer = new Renderer(this, screen, spriteSrc);
 		this.initializeInputs();
 		screen.focus();
