@@ -14,4 +14,6 @@ export default class BlockObject extends GameObject {
 			[]
 		]
 	}
+
+	
 }

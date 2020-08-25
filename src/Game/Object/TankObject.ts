@@ -30,6 +30,15 @@ export default class TankObject extends MovingObject {
 		return this._tankColor;
 	}
 
+	// TODO: REMOVE WHEN DEPLOY
+	set tankColor(color: ETankColor) {
+		this._tankColor = color;
+	}
+	// TODO: REMOVE WHEN DEPLOY
+	set tankLevel(level: number) {
+		this._tankLevel = level;
+	}
+
 	get tankLevel(): number {
 		return this._tankLevel;
 	}

@@ -8,6 +8,40 @@
 </head>
 <body>
 	<canvas id="canvas"></canvas>
+	<div id="debugPalette">
+		<h3>DEBUG</h3>
+		<table id="mainTank">
+			<tr>
+				<td>
+					level:
+					<select id="mainTank_level">
+						<option value="0">1</option>
+						<option value="1">2</option>
+						<option value="2">3</option>
+						<option value="3">4</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					color:
+					<select id="mainTank_color">
+						<option value="YELLOW">yellow</option>
+						<option value="GREEN">green</option>
+						<option value="MAGENTA">magenta</option>
+						<option value="WHITE">white</option>
+					</select>
+				</td>
+			</tr>
+		</table>
+
+		<h3>ANIMATION</h3>
+		<table>
+			<tr>
+				<td><button id="mainTank_invincible">tank invincible</button></td>
+			</tr>
+		</table>
+	</div>
 	<button id="debug" value="false">debug = false</button>
 	<script src="./js/index.js"></script>
 </body>

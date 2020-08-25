@@ -3,3 +3,26 @@ html, body {
 	padding: 0;
 	overflow: hidden;
 }
+
+#debugPalette {
+	width: 200px;
+	padding: 5px;
+	height: auto;
+	display: inline-block;
+	position: absolute;
+	left: 600px;
+	top: 0;
+	border: 1px solid black;
+}
+#debugPalette > h3 {
+	margin: 0.25em 0;
+}
+#debugPalette > table {
+	width: 100%;
+	border: 1px solid #8C8c8C;
+	border-collapse: collapse;
+}
+#debugPalette > table th,
+#debugPalette > table td {
+	border: 1px solid #8C8c8C;
+}
