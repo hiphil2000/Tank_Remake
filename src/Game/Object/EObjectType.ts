@@ -1,11 +1,9 @@
 const enum EObjectType {
-	TANK,
-	BRICK,
-	STEEL,
-	WATER,
-	BUSH,
-	BULLET,
-	
+	TANK = 'TANK',
+	BLOCK = 'BLOCK',
+	BULLET = 'BULLET',
+	ANIMATION = 'ANIMATION',
+	ITEM = 'ITEM'
 }
 
 export default EObjectType;
