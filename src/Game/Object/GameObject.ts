@@ -35,4 +35,8 @@ export default abstract class GameObject {
 
 		this._positon = position;
 	}
+
+	remove() {
+		this._game.removeObject(this);
+	}
 }

@@ -6,7 +6,14 @@ export interface SpriteDef {
 	size: Size;
 };
 
-export interface TankSpriteDef {
+export interface singleSpriteDef {
+	up: SpriteDef;
+	left: SpriteDef;
+	down: SpriteDef;
+	right: SpriteDef;
+}
+
+export interface multiSpriteDef {
 	up: Array<SpriteDef>;
 	left: Array<SpriteDef>;
 	down: Array<SpriteDef>;
@@ -311,6 +318,21 @@ const SPRTIE_DEF = {
 				]
 			}
 		]
+	},
+	BULLET: {
+		up: { position: { x: 646, y: 204 }, size: { width: 6, height: 8 } },
+		left: { position: { x: 660, y: 204 }, size: { width: 8, height: 6 } },
+		down: { position: { x: 678, y: 204 }, size: { width: 6, height: 8 } },
+		right: { position: { x: 692, y: 204}, size: { width: 8, height: 6} }
+	},
+	BLOCK: {
+
+	},
+	ANIMATION: {
+
+	},
+	ITEM: {
+
 	}
 }
 

@@ -29,3 +29,20 @@ export default abstract class MovingObject extends GameObject {
 
 	abstract move(): void;
 }
+
+export function calculateMove(position: Point, direction: EDirection, speed: number) {
+	switch(direction) {
+		case EDirection.up:
+			position.y -= speed;
+			break;
+		case EDirection.right:
+			position.x += speed;
+			break;
+		case EDirection.down:
+			position.y += speed;
+			break;
+		case EDirection.left:
+			position.x -= speed;
+			break;
+	}
+}
