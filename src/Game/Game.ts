@@ -4,10 +4,10 @@ import GameObject from "./Object/GameObject";
 import TankObject, { ETankColor } from "./Object/TankObject";
 import EGameType from "./GameData/EGameType";
 import ILevel from "./Level/ILevel";
-import EDirection, { EDirectionToEKeys } from "../Utils/EDirection";
+import EDirection from "../Utils/EDirection";
 import IKeyState from "./InputManage/IKeyState";
 import EKeys, { EKeysToEDirection } from "./InputManage/EKeys";
-import SPRTIE_DEF, { SpriteDef } from "../Render/Sprite/SpriteDefinition";
+import { SpriteDef } from "../Render/Sprite/SpriteDefinition";
 import EObjectType from "./Object/EObjectType";
 import BulletObject from "./Object/BulletObject";
 import { Point } from "../Utils/UnitTypes";
@@ -87,6 +87,8 @@ export default class Game {
 		}
 
 		this._gameData.objects.push(object);
+
+		this.sortObject();
 	}
 
 	public removeObject(object: GameObject) {
@@ -95,6 +97,21 @@ export default class Game {
 		}
 		let idx = this._gameData.objects.indexOf(object);
 		this._gameData.objects.splice(idx, 1);
+		
+		this.sortObject();
+	}
+
+	private sortObject() {
+		if (this._gameData == null || this._gameData.objects == null) {
+			return;
+		}
+
+		this._gameData.objects.sort((obj1, obj2) => {
+			let zindex1 = this.getObjectZIndex(obj1);
+			let zindex2 = this.getObjectZIndex(obj2);
+
+			return zindex1 - zindex2;
+		});
 	}
 
 	public getObjects(): Array<GameObject> {
@@ -127,8 +144,26 @@ export default class Game {
 				return;
 			}
 
-			if (object.objectType === EObjectType.BULLET) {
-				if (item.id === (object as BulletObject).parentId) {
+			if (item.objectType === EObjectType.BLOCK) {
+				let blockType = (item as BlockObject).blockType;
+				if ((object.objectType === EObjectType.TANK || object.objectType === EObjectType.BULLET) && blockType === EBlockType.BUSH) {
+					return;
+				}
+				if (object.objectType === EObjectType.BULLET && blockType === EBlockType.WATER) {
+					return
+				}
+			}
+
+			if (item.objectType === EObjectType.TANK) {
+				if (object.objectType === EObjectType.BULLET) {
+					if (item.id === (object as BulletObject).parentId) {
+						return;
+					}
+				}
+			}
+
+			if (item.objectType === EObjectType.BULLET) {
+				if (object.objectType === EObjectType.TANK) {
 					return;
 				}
 			}
@@ -184,11 +219,19 @@ export default class Game {
 	}
 
 	/**
-	 * Find sprite data for given object (Port of Renderer.testVisibility)
+	 * Find sprite data for given object (Port of Renderer.getSprite)
 	 * @param object found sprite definition
 	 */
 	public getSprite(object: GameObject): SpriteDef {
 		return this._renderer.getSpriteData(object);
+	}
+
+	/**
+	 * Calculate and return Z-Index for render (Port of Renderer.getObjectZIndex)
+	 * @param object sprite for calculate
+	 */
+	public getObjectZIndex(object: GameObject): number {
+		return this._renderer.getObjectZIndex(object);
 	}
 	//#endregion
 	//#endregion

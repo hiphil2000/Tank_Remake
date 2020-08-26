@@ -47,11 +47,11 @@ export default abstract class GameObject {
 	remove() {
 		this._game.removeObject(this);
 	}
-	
+
 	public nextSpritePosition(): number {
 		this._spritePosition = this._spritePosition + 1 <= 1 ? this._spritePosition + 1 : 0;
 		return this._spritePosition;
 	}
 
-	abstract hit(eventPoint: Point): void;
+	abstract hit(eventOrigin: GameObject): void;
 }

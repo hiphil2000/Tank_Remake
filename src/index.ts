@@ -13,6 +13,7 @@ const mainTank_level = document.getElementById("mainTank_level") as HTMLSelectEl
 const mainTank_color = document.getElementById("mainTank_color") as HTMLSelectElement;
 const mainTank_invincible = document.getElementById("mainTank_invincible") as HTMLButtonElement;
 const mainTank_hit = document.getElementById("mainTank_hit") as HTMLButtonElement;
+const objects = document.getElementById("objects") as HTMLTableElement;
 
 debug_btn.addEventListener('click', ev => {
 	if (debug_btn.getAttribute('value') == 'true') {
@@ -32,6 +33,29 @@ mainTank_level.addEventListener("change", () => {updateTank()});
 mainTank_color.addEventListener("change", () => {updateTank()});
 mainTank_invincible.addEventListener("click", () => { game.mainTank.invincible(); });
 mainTank_hit.addEventListener("click", () => { game.mainTank.hit(); });
+let objectFinder = setInterval(() => {
+	console.log("!");
+	objects.innerHTML = 
+	`
+	<tr>
+		<td>zIndex</td>
+		<td>id</td>
+		<td>type</td>
+		<td>position</td>
+	</tr>
+	`;
+	game.getObjects().forEach(object => {
+		objects.innerHTML = objects.innerHTML + 
+		`
+		<tr>
+			<td>${game.getObjectZIndex(object)}</td>
+			<td>${object.id}</td>
+			<td>${object.objectType}</td>
+			<td>[x: ${object.position.x}, y: ${object.position.y}]</td>
+		</tr>
+		`
+	})
+}, 100)
 
 function updateTank() {
 	game.mainTank.tankColor = mainTank_color.value as ETankColor;

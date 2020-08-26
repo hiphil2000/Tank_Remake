@@ -316,5 +316,40 @@ export default class Renderer {
 	private getRandomRange(min: number, max: number): number {
 		return Math.floor(Math.random() * (max - min) + min);
 	}
+
+	/**
+	 * Calculate and return Z-Index for render
+	 * 0: Water Block
+	 * 1: Tanks, Breakable Blocks
+	 * 2: Invincible Animation, Bullets
+	 * 3: Bush
+	 * 4: Explode Animations, Score Animations, Spawning Animation
+	 * 5: System Sprites(Game Over... etc)
+	 * @param object object for calculate
+	 */
+	public getObjectZIndex(object: GameObject): number {
+		switch(object.objectType) {
+			case EObjectType.BLOCK:
+				let block = object as BlockObject;
+				if (block.blockType === EBlockType.WATER) {
+					return 0;
+				} else if (block.blockType === EBlockType.BUSH) {
+					return 3;
+				} else {
+					return 1;
+				}
+			case EObjectType.TANK:
+				return 1;
+			case EObjectType.ANIMATION:
+				let animation = object as AnimationObject;
+				if (animation.animationType === EAnimationType.INVINCIBLE) {
+					return 2;
+				} else {
+					return 4
+				}
+			case EObjectType.BULLET:
+				return 2;
+		}
+	}
 	//#endregion
 }

@@ -34,7 +34,7 @@ export default class BulletObject extends MovingObject {
 			this._game.log(`BULLET [${this.id}] EXPLODED.`);
 			this.explode();
 			test_collision.forEach(object => {
-				object.hit(this.position);
+				object.hit(this);
 			})
 		}
 	}
