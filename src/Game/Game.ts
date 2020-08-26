@@ -12,7 +12,8 @@ import EObjectType from "./Object/EObjectType";
 import BulletObject from "./Object/BulletObject";
 import { Point } from "../Utils/UnitTypes";
 import AnimationObject from "./Object/AnimationObject";
-import EAnimationType from "./Object/EAnimationType";
+import EAnimationType, { AnimationValue, AnimationDefaults } from "./Object/EAnimationType";
+import BlockObject from "./Object/BlockObject";
 
 export const MAIN_TANK_ID = 'MAIN';
 
@@ -72,6 +73,12 @@ export default class Game {
 	}
 	//#endregion
 	
+	public log(msg: string): void {
+		if (this.debug) {
+			console.log(`[${performance.now()}] ${msg}`);
+		}
+	}
+
 	//#region game object methods
 
 	public insertObject(object: GameObject) {
@@ -116,11 +123,21 @@ export default class Game {
 		let objectSprite = this._renderer.getSpriteData(object);
 
 		this._gameData.objects.forEach(item => {
+			if (item.objectType === EObjectType.ANIMATION) {
+				return;
+			}
+
+			if (object.objectType === EObjectType.BULLET) {
+				if (item.id === (object as BulletObject).parentId) {
+					return;
+				}
+			}
+
 			let spriteData = this._renderer.getSpriteData(item);
 
 			let test = this._renderer.rectangleCollisionTest(object, objectSprite, item, spriteData);
 
-			if (test) {
+			if (item != object && test) {
 				found.push(item);
 			}
 		})
@@ -128,7 +145,35 @@ export default class Game {
 		return found;
 	}
 
-	//#region renderer porting method
+	public startAnimation(target: Point|GameObject, animationType: EAnimationType, animationValue?: AnimationValue, callback?: (animation: AnimationObject) => void) {
+		let animationPoint: Point;
+		if (target instanceof GameObject) {
+			let object = target as GameObject;
+			let size = this.getSprite(object).size;
+			animationPoint = {
+				x: object.position.x + size.width / 2,
+				y: object.position.y + size.height / 2
+			};
+		} else {
+			animationPoint = target;
+		}
+
+		if (animationValue == undefined) {
+			animationValue = AnimationDefaults[animationType];
+		}
+
+		let animation = new AnimationObject(
+			this, animationType,
+			animationPoint,
+			animationValue.duration,
+			animationValue.frameRate,
+			animationValue.loop,
+			callback
+		);
+		this.insertObject(animation);
+	}
+
+	//#region renderer porting methods
 	/**
 	 * Test object is visible (Port of Renderer.testVisibility)
 	 * @param object object for test
@@ -161,6 +206,62 @@ export default class Game {
 			ETankColor.YELLOW,
 			0
 		);
+		
+		this.insertObject(
+			new BlockObject(
+				this,
+				EBlockType.BRICK,
+				{ x: 3 * 32, y: 5 * 32 },
+				{
+					bottomLeft: true,
+					bottomRight: true,
+					topLeft: true,
+					topRight: true
+				}
+			)
+		)
+		
+		this.insertObject(
+			new BlockObject(
+				this,
+				EBlockType.IRON,
+				{ x: 3 * 32, y: 6 * 32 },
+				{
+					bottomLeft: true,
+					bottomRight: true,
+					topLeft: true,
+					topRight: true
+				}
+			)
+		)
+
+		this.insertObject(
+			new BlockObject(
+				this,
+				EBlockType.WATER,
+				{ x: 3 * 32, y: 7 * 32 },
+				{
+					bottomLeft: true,
+					bottomRight: true,
+					topLeft: true,
+					topRight: true
+				}
+			)
+		)
+
+		this.insertObject(
+			new BlockObject(
+				this,
+				EBlockType.BUSH,
+				{ x: 3 * 32, y: 8 * 32 },
+				{
+					bottomLeft: true,
+					bottomRight: true,
+					topLeft: true,
+					topRight: true
+				}
+			)
+		)
 	}
 	//#endregion
 	
@@ -217,20 +318,7 @@ export default class Game {
 			tankLevel,
 			MAIN_TANK_ID
 		));
-
-		let mainTank = this.mainTank;
-		let tankSize = this.getSprite(this.mainTank).size;
-		this.insertObject(new AnimationObject(
-			this,
-			EAnimationType.INVINCIBLE,
-			{
-				x: mainTank.position.x - tankSize.width / 2,
-				y: mainTank.position.y - tankSize.height / 2
-			},
-			3000,
-			25,
-			true
-		));
+		this.mainTank.invincible();
 	}
 	//#endregion
 	

@@ -326,7 +326,34 @@ const SPRTIE_DEF = {
 		right: { position: { x: 692, y: 204}, size: { width: 8, height: 6} }
 	},
 	BLOCK: {
-
+		BRICK: [
+			{
+				position: { x: 512, y: 0 },
+				size: {width: 32, height: 32}
+			}
+		],
+		IRON: [
+			{
+				position: { x: 512, y: 32 },
+				size: {width: 32, height: 32}
+			}
+		],
+		WATER: [
+			{
+				position: { x: 512, y: 96 },
+				size: {width: 32, height: 32}
+			},
+			{
+				position: { x: 544, y: 96 },
+				size: {width: 32, height: 32}
+			}
+		],
+		BUSH: [
+			{
+				position: { x: 544, y: 64 },
+				size: {width: 32, height: 32}
+			}
+		]
 	},
 	ANIMATION: {
 		EXPLOSION_SMALL: [

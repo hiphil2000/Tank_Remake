@@ -7,10 +7,14 @@ export default abstract class GameObject {
 	public readonly objectType: EObjectType;
 	protected _game: Game;
 	protected _positon: Point;
+	protected _visible: boolean;
+	protected _spritePosition: number;
 
-	constructor(game: Game, objectType: EObjectType, position?: Point, id?: string) {
+	constructor(game: Game, objectType: EObjectType, position?: Point, id?: string, visible: boolean = true) {
 		this._game = game;
+		this._visible = visible;
 		this.objectType = objectType;
+		this._spritePosition = 0;
 		if (position != undefined) {
 			this._positon = position;
 		} else {
@@ -28,6 +32,10 @@ export default abstract class GameObject {
 		return this._positon;
 	}
 
+	get spritePosition(): number {
+		return this._spritePosition;
+	}
+
 	set position(position: Point) {
 		if (position.x <= 0 || position.y <= 0) {
 			throw 'position cannot be a negative value';
@@ -39,4 +47,11 @@ export default abstract class GameObject {
 	remove() {
 		this._game.removeObject(this);
 	}
+	
+	public nextSpritePosition(): number {
+		this._spritePosition = this._spritePosition + 1 <= 1 ? this._spritePosition + 1 : 0;
+		return this._spritePosition;
+	}
+
+	abstract hit(eventPoint: Point): void;
 }

@@ -7,6 +7,7 @@ import { Point, Size } from "../Utils/UnitTypes";
 import BulletObject from "../Game/Object/BulletObject";
 import AnimationObject from "../Game/Object/AnimationObject";
 import EAnimationType from "../Game/Object/EAnimationType";
+import BlockObject from "../Game/Object/BlockObject";
 
 export const MAX_FPS = 60;
 export const DRAWING_CONST = {
@@ -88,7 +89,7 @@ export default class Renderer {
 				mainTank.move();
 			}
 
-			// bullet moves
+			// other objects
 			let objects = this._game.getObjects();
 			if (objects){
 				objects.forEach(object => {
@@ -99,8 +100,7 @@ export default class Renderer {
 						case EObjectType.ANIMATION:
 							let animation = object as AnimationObject;
 							if (animation.expireTime < this._fps.now) {
-								console.log(`ANIMATION ${animation.id} HAS BEEN EXPIRED. (exp: ${animation.expireTime}, now: ${this._fps.now})`);
-								animation.remove();
+								animation.expire();
 							}
 							
 							if (animation.animationType === EAnimationType.INVINCIBLE) {
@@ -259,6 +259,9 @@ export default class Renderer {
 			case EObjectType.ANIMATION:
 				let animation = object as AnimationObject;
 				return SPRTIE_DEF.ANIMATION[animation.animationType][animation.spritePosition];
+			case EObjectType.BLOCK:
+				let block = object as BlockObject;
+				return SPRTIE_DEF.BLOCK[block.blockType][block.spritePosition];
 		}
 	}
 	

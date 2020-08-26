@@ -1,6 +1,6 @@
 const enum EBlockType {
-	BRICK,
-	IRON,
-	BUSH,
-	WATER,
+	BRICK = 'BRICK',
+	IRON = 'IRON',
+	BUSH = 'BUSH',
+	WATER = 'WATER',
 }

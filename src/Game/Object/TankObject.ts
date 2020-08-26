@@ -6,21 +6,22 @@ import EDirection from "../../Utils/EDirection";
 import BulletObject, { BULLET_SLOW, BULLET_FAST } from "./BulletObject";
 import SPRTIE_DEF, { SpriteDef } from "../../Render/Sprite/SpriteDefinition";
 import { Guid, deepClone } from "../../Utils/Utils";
+import EAnimationType from "./EAnimationType";
 
 export const TANK_SPEED = 2;
 
 export default class TankObject extends MovingObject {
 	private _tankColor: ETankColor;
 	private _tankLevel: number;
-	private _spritePosition: number;
 	private _bullets: Array<string>;	// holds bullet's id
+
+	private _isInvincible: boolean = false;
 
 	//#region constructor
 	constructor(game: Game, position: Point, direction: EDirection, tankColor: ETankColor, tankLevel: number = 1, id?: string) {
 		super(game, EObjectType.TANK, position, direction, TANK_SPEED, id);
 		this._tankColor = tankColor;
 		this._tankLevel = tankLevel;
-		this._spritePosition = 0;
 		this._bullets = [];
 	}
 	//#endregion
@@ -42,10 +43,6 @@ export default class TankObject extends MovingObject {
 	get tankLevel(): number {
 		return this._tankLevel;
 	}
-
-	get spritePosition(): number {
-		return this._spritePosition;
-	}
 	//#endregion
 	
 	//#region implements of MovingObject	
@@ -53,24 +50,41 @@ export default class TankObject extends MovingObject {
 		let original = deepClone(this.position) as Point;
 		calculateMove(this.position, this._direction, this._speed);
 		// test movement is valid
-		console.log(`TANK [${this.id}] MOVES -> [ x: ${this.position.x}, y: ${this.position.y} ]`)
-		if (!this._game.testVisibility(this, this._game.getSprite(this))) {
+		this._game.log(`TANK [${this.id}] MOVED -> [ x: ${this.position.x}, y: ${this.position.y} ]`)
+
+		let test_visible = this._game.testVisibility(this, this._game.getSprite(this));
+		let test_collision = this._game.collisionTest(this);
+
+		if (!test_visible || test_collision.length > 0) {
 			// if not, rollback movement
 			this.position = original;
-			console.log(`TANK [${this.id}] MOVES -> BLOCKED!! [ x: ${this.position.x}, y: ${this.position.y} ]`)
+			this._game.log(`TANK [${this.id}] MOVES -> BLOCKED!! [ x: ${this.position.x}, y: ${this.position.y} ]`)
 		}
 		this.nextSpritePosition();
+	}
+
+	hit() {
+		if (this._isInvincible) {
+			return;
+		}
+		this._game.startAnimation(this, EAnimationType.EXPLOSION_SMALL, null, (animation) => {
+			this._game.startAnimation(animation.animationPoint, EAnimationType.EXPLOSION_LARGE, null, () => {
+				this.remove();
+			});
+		})
 	}
 	//#endregion
 	
 	//#region public methods
-	public nextSpritePosition(): number {
-		this._spritePosition = this._spritePosition + 1 <= 1 ? this._spritePosition + 1 : 0;
-		return this._spritePosition;
-	}
-
 	public fire() {
 		this.createBullet();
+	}
+
+	public invincible() {
+		this._isInvincible = true;
+		this._game.startAnimation(this, EAnimationType.INVINCIBLE, null, (anim) => {
+			this._isInvincible = false;
+		})
 	}
 
 	protected createBullet() {

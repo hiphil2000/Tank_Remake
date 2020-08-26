@@ -13,12 +13,12 @@ export default class AnimationObject extends GameObject {
 	
 	private _currentTime: number;
 	private _expireTime: number;
-	private _spritePosition: number;
 	private _frameCount: number;
 	private _frameRate: number;
 	private _loop: boolean;
+	private _callback: (animation: AnimationObject) => void;
 
-	constructor(game: Game, animationType: EAnimationType, animationPoint: Point, duration: number, frameRate: number, loop: boolean = false) {
+	constructor(game: Game, animationType: EAnimationType, animationPoint: Point, duration: number, frameRate: number, loop: boolean = false, callback?: (animation: AnimationObject) => void) {
 		super(game, EObjectType.ANIMATION, animationPoint, Guid.newGuid());
 		this.animationType = animationType;
 		this._animationPoint = animationPoint;
@@ -28,6 +28,7 @@ export default class AnimationObject extends GameObject {
 		this._frameCount = SPRTIE_DEF.ANIMATION[this.animationType].length
 		this._frameRate = frameRate;
 		this._loop = loop;
+		this._callback = callback;
 		this.updatePosition();
 	}
 
@@ -41,18 +42,18 @@ export default class AnimationObject extends GameObject {
 		this.updatePosition();
 	}
 
-	get spritePosition(): number {
-		return this._spritePosition;
-	}
-
 	get expireTime(): number {
 		return this._expireTime;
 	}
 	//#endregion
 
 	//#region public methods
+
+	// ignore hit event
+	hit(): void {}
+
 	public nextSpritePosition(): number {
-		console.log(`[${this.spritePosition} / ${this._frameCount - 1}]${performance.now() - this._currentTime} >= ${this._frameRate}`);
+		this._game.log(`[${this.spritePosition} / ${this._frameCount - 1}]${performance.now() - this._currentTime} >= ${this._frameRate}`);
 		if (performance.now() - this._currentTime >= this._frameRate) {
 			this._currentTime = performance.now();
 			if (this._spritePosition + 1 < this._frameCount) {
@@ -64,6 +65,14 @@ export default class AnimationObject extends GameObject {
 			this.updatePosition();
 		}
 		return this._spritePosition;
+	}
+
+	public expire() {
+		this._game.log(`ANIMATION ${this.id} HAS BEEN EXPIRED. (${performance.now})`);
+		this.remove();
+		if (this._callback) {
+			this._callback(this);
+		}
 	}
 	//#endregion
 

@@ -2,14 +2,18 @@ import Game from "./Game/Game";
 import { ETankColor } from "./Game/Object/TankObject";
 const spriteImage = require('./Render/Sprite/sprite.png');
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+
+// init game
+let game = new Game(canvas, './js/sprite.png');
+
+//#region DEBUG
 const debug_btn = document.getElementById("debug");
 
 const mainTank_level = document.getElementById("mainTank_level") as HTMLSelectElement;
 const mainTank_color = document.getElementById("mainTank_color") as HTMLSelectElement;
 const mainTank_invincible = document.getElementById("mainTank_invincible") as HTMLButtonElement;
+const mainTank_hit = document.getElementById("mainTank_hit") as HTMLButtonElement;
 
-// init game
-let game = new Game(canvas, './js/sprite.png');
 debug_btn.addEventListener('click', ev => {
 	if (debug_btn.getAttribute('value') == 'true') {
 		game.debug = false;
@@ -26,11 +30,12 @@ mainTank_level.value = game.mainTank.tankLevel.toString();
 
 mainTank_level.addEventListener("change", () => {updateTank()});
 mainTank_color.addEventListener("change", () => {updateTank()});
-mainTank_invincible.addEventListener("click", () => {
-	//game.mainTank.setInvincible()
-})
+mainTank_invincible.addEventListener("click", () => { game.mainTank.invincible(); });
+mainTank_hit.addEventListener("click", () => { game.mainTank.hit(); });
 
 function updateTank() {
 	game.mainTank.tankColor = mainTank_color.value as ETankColor;
 	game.mainTank.tankLevel = parseInt(mainTank_level.value);
 }
+
+//#endregion

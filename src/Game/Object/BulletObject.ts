@@ -18,14 +18,29 @@ export default class BulletObject extends MovingObject {
 		this._parent = parent;
 	}
 
+	get parentId(): string {
+		return this._parent.id;
+	}
+
 	move(): void {
 		let changed = this.position;
 		calculateMove(changed, this._direction, this._speed);
-		console.log(this.position);
-		if (this._game.testVisibility(this, this._game.getSprite(this)) === false) {
-			console.log(`BULLET [${this.id}] EXPLODED.`);
+		this._game.log(`BULLET [${this.id}] MOVED -> [x:${this.position.x}], y:[${this.position.y}]`);
+
+		let test_visible = this._game.testVisibility(this, this._game.getSprite(this));
+		let test_collision = this._game.collisionTest(this);
+
+		if (test_visible == false || test_collision.length > 0) {
+			this._game.log(`BULLET [${this.id}] EXPLODED.`);
 			this.explode();
+			test_collision.forEach(object => {
+				object.hit(this.position);
+			})
 		}
+	}
+
+	hit() {
+		this.explode();
 	}
 
 	explode() {
@@ -58,6 +73,6 @@ export default class BulletObject extends MovingObject {
 	remove() {
 		super.remove();
 		this._parent.removeBullet(this.id);
-		console.log(`BULLET [${this.id}] HAS BEEN REMOVED.`);
+		this._game.log(`BULLET [${this.id}] HAS BEEN REMOVED.`);
 	}
 }
