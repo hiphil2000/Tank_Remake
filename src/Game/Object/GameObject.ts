@@ -1,18 +1,18 @@
 import { Point } from "../../Utils/UnitTypes";
 import Game from "../Game";
-import EObjectType from "./EObjectType";
+import EObjectType from "./Enum/EObjectType";
 
 export default abstract class GameObject {
 	public readonly id: string | undefined;
 	public readonly objectType: EObjectType;
+	public visible: boolean;
 	protected _game: Game;
 	protected _positon: Point;
-	protected _visible: boolean;
 	protected _spritePosition: number;
 
 	constructor(game: Game, objectType: EObjectType, position?: Point, id?: string, visible: boolean = true) {
 		this._game = game;
-		this._visible = visible;
+		this.visible = visible;
 		this.objectType = objectType;
 		this._spritePosition = 0;
 		if (position != undefined) {

@@ -1,16 +1,18 @@
 import { Point } from "../../Utils/UnitTypes";
 import Game from "../Game";
-import EObjectType from "./EObjectType";
+import EObjectType from "./Enum/EObjectType";
 import MovingObject, { calculateMove } from "./MovingObject";
 import EDirection from "../../Utils/EDirection";
 import BulletObject, { BULLET_SLOW, BULLET_FAST } from "./BulletObject";
 import SPRTIE_DEF, { SpriteDef } from "../../Render/Sprite/SpriteDefinition";
 import { Guid, deepClone } from "../../Utils/Utils";
-import EAnimationType from "./EAnimationType";
+import EAnimationType from "./Enum/EAnimationType";
+import ETankType from "./Enum/ETankType";
 
 export const TANK_SPEED = 2;
 
 export default class TankObject extends MovingObject {
+	private _tankType: ETankType;
 	private _tankColor: ETankColor;
 	private _tankLevel: number;
 	private _bullets: Array<string>;	// holds bullet's id
@@ -18,17 +20,33 @@ export default class TankObject extends MovingObject {
 	private _isInvincible: boolean = false;
 
 	//#region constructor
-	constructor(game: Game, position: Point, direction: EDirection, tankColor: ETankColor, tankLevel: number = 1, id?: string) {
+	constructor(game: Game, tankType: ETankType, position: Point, direction: EDirection, tankColor: ETankColor, tankLevel: number = 1, id?: string) {
 		super(game, EObjectType.TANK, position, direction, TANK_SPEED, id);
+		this._tankType = tankType;
 		this._tankColor = tankColor;
 		this._tankLevel = tankLevel;
 		this._bullets = [];
+		this.visible = false;
+		this._game.startAnimation(this, EAnimationType.SPAWN, null, animation => {
+			this.visible = true;
+			if (this == this._game.mainTank) {
+				this.invincible();
+			}
+		})
 	}
 	//#endregion
 
 	//#region getter, setter
 	get tankColor(): ETankColor {
 		return this._tankColor;
+	}
+
+	get tankType(): ETankType {
+		return this._tankType;
+	}
+
+	get isInvincible(): boolean {
+		return this._isInvincible;
 	}
 
 	// TODO: REMOVE WHEN DEPLOY
@@ -49,14 +67,22 @@ export default class TankObject extends MovingObject {
 	move() {
 		let original = deepClone(this.position) as Point;
 		calculateMove(this.position, this._direction, this._speed);
-		// test movement is valid
 		this._game.log(`TANK [${this.id}] MOVED -> [ x: ${this.position.x}, y: ${this.position.y} ]`)
-
-		let test_visible = this._game.testVisibility(this, this._game.getSprite(this));
+		
+		// test movement is valid
+		let test_visible = this._game.testVisibility(this);
 		let test_collision = this._game.collisionTest(this);
+		let collision_items = test_collision.filter(x => { return x.objectType === EObjectType.ITEM; });
 
-		if (!test_visible || test_collision.length > 0) {
-			// if not, rollback movement
+		// execute hit event collision items
+		if (collision_items.length > 0) {
+			collision_items.forEach(item => {
+				item.hit(this);
+			});
+		}
+
+		// if movement is not valid, rollback movement
+		if (!test_visible || test_collision.length - collision_items.length > 0) {
 			this.position = original;
 			this._game.log(`TANK [${this.id}] MOVES -> BLOCKED!! [ x: ${this.position.x}, y: ${this.position.y} ]`)
 		}
@@ -70,6 +96,7 @@ export default class TankObject extends MovingObject {
 		this._game.startAnimation(this, EAnimationType.EXPLOSION_SMALL, null, (animation) => {
 			this._game.startAnimation(animation.animationPoint, EAnimationType.EXPLOSION_LARGE, null, () => {
 				this.remove();
+				this._game.spawnTank(ETankType.PLAYER_TANK);
 			});
 		})
 	}
@@ -87,7 +114,13 @@ export default class TankObject extends MovingObject {
 		})
 	}
 
-	protected createBullet() {
+	public levelup() {
+		if (this.tankLevel < 3) {
+			this.tankLevel++;
+		}
+	}
+
+	private createBullet() {
 		if (this.tankLevel < 2 && this._bullets.length >= 1) {
 			return;
 		} else if (this.tankLevel < 4 && this._bullets.length >= 2) {

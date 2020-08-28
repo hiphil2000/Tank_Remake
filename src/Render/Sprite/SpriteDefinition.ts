@@ -417,31 +417,62 @@ const SPRTIE_DEF = {
 		SCORE_200: [
 			{
 				position: { x: 610, y: 328 },
-				size: { width: 26, height: 14 }
+				size: { width: 28, height: 14 }
 			},
 		],
 		SCORE_300: [
 			{
 				position: { x: 642, y: 328 },
-				size: { width: 26, height: 14 }
+				size: { width: 28, height: 14 }
 			},
 		],
 		SCORE_400: [
 			{
 				position: { x: 674, y: 328 },
-				size: { width: 26, height: 14 }
+				size: { width: 28, height: 14 }
 			},
 		],
 		SCORE_500: [
 			{
 				position: { x: 706, y: 328 },
-				size: { width: 26, height: 14 }
+				size: { width: 28, height: 14 }
 			},
 		]
 
 	},
 	ITEM: {
-
+		HELMET: {
+			position: { x: 512, y: 224 },
+			size: { width: 32, height: 30 }
+		},
+		WATCH: {
+			position: { x: 544, y: 224 },
+			size: { width: 32, height: 30 }
+		},
+		SHOVEL: {
+			position: { x: 576, y: 224 },
+			size: { width: 32, height: 30 }
+		},
+		STAR: {
+			position: { x: 608, y: 224 },
+			size: { width: 32, height: 30 }
+		},
+		BOMB: {
+			position: { x: 640, y: 224 },
+			size: { width: 32, height: 30 }
+		},
+		TANK: {
+			position: { x: 672, y: 224 },
+			size: { width: 32, height: 30 }
+		},
+		PISTOL: {
+			position: { x: 704, y: 224 },
+			size: { width: 32, height: 30 }
+		},
+	},
+	NULL: {
+		position: { x: 0, y: 0 },
+		size: { width: 0, height: 0 }
 	}
 }
 

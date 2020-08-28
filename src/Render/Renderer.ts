@@ -1,13 +1,14 @@
 import Game from "../Game/Game";
 import GameObject from "../Game/Object/GameObject";
-import EObjectType from "../Game/Object/EObjectType";
+import EObjectType from "../Game/Object/Enum/EObjectType";
 import SPRTIE_DEF, { SpriteDef } from "./Sprite/SpriteDefinition";
 import TankObject from "../Game/Object/TankObject";
 import { Point, Size } from "../Utils/UnitTypes";
 import BulletObject from "../Game/Object/BulletObject";
 import AnimationObject from "../Game/Object/AnimationObject";
-import EAnimationType from "../Game/Object/EAnimationType";
+import EAnimationType from "../Game/Object/Enum/EAnimationType";
 import BlockObject from "../Game/Object/BlockObject";
+import ItemObject from "../Game/Object/ItemObject";
 
 export const MAX_FPS = 60;
 export const DRAWING_CONST = {
@@ -18,9 +19,9 @@ export const DRAWING_CONST = {
 	},
 	sizes: {
 		frame: {
-			left: 16,
-			top: 10,
-			bottom: 10,
+			left: 32,
+			top: 24,
+			bottom: 24,
 			right: 32
 		}
 	},
@@ -159,13 +160,13 @@ export default class Renderer {
 
 		ctx.fillStyle = DRAWING_CONST.colors.background_frame;
 		// top
-		ctx.fillRect(0, 0, ctx.canvas.width, DRAWING_CONST.sizes.frame.top);
+		ctx.fillRect(0, 0, ctx.canvas.clientWidth, DRAWING_CONST.sizes.frame.top);
 		// left
-		ctx.fillRect(0, 0, DRAWING_CONST.sizes.frame.left, ctx.canvas.height);
+		ctx.fillRect(0, 0, DRAWING_CONST.sizes.frame.left, ctx.canvas.clientHeight);
 		// bottom
-		ctx.fillRect(0, ctx.canvas.height - DRAWING_CONST.sizes.frame.bottom, ctx.canvas.width, DRAWING_CONST.sizes.frame.bottom);
+		ctx.fillRect(0, ctx.canvas.clientHeight - DRAWING_CONST.sizes.frame.bottom, ctx.canvas.clientWidth, DRAWING_CONST.sizes.frame.bottom);
 		// right
-		ctx.fillRect(ctx.canvas.width - DRAWING_CONST.sizes.frame.right, 0, DRAWING_CONST.sizes.frame.right, ctx.canvas.height);
+		ctx.fillRect(ctx.canvas.clientWidth - DRAWING_CONST.sizes.frame.right, 0, DRAWING_CONST.sizes.frame.right, ctx.canvas.clientHeight);
 		ctx.restore();
 
 	}
@@ -176,34 +177,69 @@ export default class Renderer {
 		for(let i = 0; i < objects.length; i++) {
 			let object = objects[i];
 			let sprite = this.getSpriteData(object);
-			if (sprite != null) {
+			
+			this.drawObject(ctx, object, sprite);
+
+			if (this._game.debug) {
+				ctx.strokeStyle = '#FF0000';
+				ctx.strokeRect(
+					object.position.x,
+					object.position.y,
+					sprite.size.width,
+					sprite.size.height
+				);
+				// this.drawText(ctx, `${object.id}`, {
+				// 	x: DRAWING_CONST.sizes.frame.left + object.position.x,
+				// 	y: DRAWING_CONST.sizes.frame.top + object.position.y - 1,
+				// }, sprite.size.width);
+			}
+
+			ctx.restore();
+		}
+	}
+
+	private drawObject(ctx: CanvasRenderingContext2D, object: GameObject, sprite: SpriteDef) {
+		if (object.visible === false) {
+			return;
+		}
+		if (sprite != null) {
+			if (object.objectType === EObjectType.BLOCK) {
+				let block = object as BlockObject;
+				let blockState = block.blockState4x4;
+				let cellSize = {
+					width: sprite.size.width / 4,
+					height: sprite.size.width / 4
+				} as Size;
+				for(let i = 0; i < blockState.length; i++) {
+					for(let j = 0; j < blockState[i].length; j++) {
+						if (blockState[i][j] === true) {
+							ctx.drawImage(
+								this._sprite,
+								sprite.position.x + cellSize.width * j,
+								sprite.position.y + cellSize.height * i,
+								cellSize.width,
+								cellSize.height,
+								object.position.x + cellSize.width * j,
+								object.position.y + cellSize.height * i,
+								cellSize.width,
+								cellSize.height
+							)
+						}
+					}
+				}
+			} else {
 				ctx.drawImage(
 					this._sprite,
 					sprite.position.x,
 					sprite.position.y,
 					sprite.size.width,
 					sprite.size.height,
-					DRAWING_CONST.sizes.frame.left + object.position.x,
-					DRAWING_CONST.sizes.frame.top + object.position.y,
+					object.position.x,
+					object.position.y,
 					sprite.size.width,
 					sprite.size.height
 				);
 			}
-			if (this._game.debug) {
-				ctx.strokeStyle = '#FF0000';
-				ctx.strokeRect(
-					DRAWING_CONST.sizes.frame.left + object.position.x,
-					DRAWING_CONST.sizes.frame.top + object.position.y,
-					sprite.size.width,
-					sprite.size.height
-				);
-				this.drawText(ctx, `${object.id}`, {
-					x: DRAWING_CONST.sizes.frame.left + object.position.x,
-					y: DRAWING_CONST.sizes.frame.top + object.position.y - 1,
-				}, sprite.size.width);
-			}
-
-			ctx.restore();
 		}
 	}
 
@@ -262,39 +298,79 @@ export default class Renderer {
 			case EObjectType.BLOCK:
 				let block = object as BlockObject;
 				return SPRTIE_DEF.BLOCK[block.blockType][block.spritePosition];
+			case EObjectType.ITEM:
+				let item = object as ItemObject;
+				return SPRTIE_DEF.ITEM[item.itemType];
 		}
 	}
 	
 	/**
-	 * Tests two objects are collisions (rectangle collision test)
+	 * Tests two objects are collisions (rectangle bounding box collision test)
 	 * @param object1 first object
 	 * @param sprite1 first object's sprite data for size
 	 * @param object2 second object
 	 * @param sprite2 second object's sprite data for size
 	 */
-	public rectangleCollisionTest(object1: GameObject, sprite1: SpriteDef, object2: GameObject, sprite2: SpriteDef): boolean {
-		if (object1.position.x + sprite1.size.width >= object2.position.x &&
-			object1.position.x <= object2.position.x + sprite2.size.width &&
-			object1.position.y + sprite1.size.height >= object2.position.y &&
-			object1.position.y <= object2.position.y + sprite2.size.height
+	public ObjectCollisionTest(object1: GameObject, object2: GameObject): boolean {
+		let size1 = this.getSpriteData(object1).size;
+		let size2 = this.getSpriteData(object2).size;
+
+		return this.RectangleCollisionTest(object1.position, size1, object2.position, size2);
+	}
+
+	public BlockCollisionTest(block: BlockObject, object: GameObject): boolean {
+		let blockSize = this.getSpriteData(block).size;
+		let objectSize = this.getSpriteData(object).size;
+		
+		let cellPosition: Point;
+		let cellSize = {
+			width: blockSize.width / 4,
+			height: blockSize.height / 4
+		} as Size;
+
+		for(let i = 0; i < block.blockState4x4.length; i++) {
+			for(let j = 0; j < block.blockState4x4[i].length; j++) {
+				if (block.blockState4x4[i][j] == false) {
+					continue;
+				}
+
+				cellPosition = {
+					x: block.position.x + (blockSize.width / 4) * j,
+					y: block.position.y + (blockSize.height / 4) * i
+				} as Point;
+				if (this.RectangleCollisionTest(cellPosition, cellSize, object.position, objectSize)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private RectangleCollisionTest(pos1: Point, size1: Size, pos2: Point, size2: Size) {
+		if (pos1.x + size1.width >= pos2.x &&
+			pos1.x <= pos2.x + size2.width &&
+			pos1.y + size1.height >= pos2.y &&
+			pos1.y <= pos2.y + size2.height
 		) {
 			return true;
 		} else {
 			return false;
 		}
 	}
-
 	/**
 	 * Test object is visible
 	 * @param object object for test
 	 * @param sprite object's sprite data for size
 	 */
-	public testVisibility(object: GameObject, sprite: SpriteDef): boolean { 
+	public objectVisibleTest(object: GameObject): boolean { 
+		let position = object.position;
+		let size = this.getSpriteData(object).size;
 		let ctx = this._canvas.getContext('2d');
-		if (object.position.x + sprite.size.width <= ctx.canvas.width - DRAWING_CONST.sizes.frame.right &&
-			object.position.x >= DRAWING_CONST.sizes.frame.left &&
-			object.position.y + sprite.size.height <= ctx.canvas.height - DRAWING_CONST.sizes.frame.bottom &&
-			object.position.y >= DRAWING_CONST.sizes.frame.top
+		if (position.x >= DRAWING_CONST.sizes.frame.left &&
+			position.x + size.width <= ctx.canvas.clientWidth - DRAWING_CONST.sizes.frame.right &&
+			position.y >= DRAWING_CONST.sizes.frame.top &&
+			position.y + size.height <= ctx.canvas.clientHeight - DRAWING_CONST.sizes.frame.bottom 
 		) {
 			return true;
 		} else {
@@ -324,7 +400,8 @@ export default class Renderer {
 	 * 2: Invincible Animation, Bullets
 	 * 3: Bush
 	 * 4: Explode Animations, Score Animations, Spawning Animation
-	 * 5: System Sprites(Game Over... etc)
+	 * 5: Items
+	 * 6: System Sprites(Game Over... etc)
 	 * @param object object for calculate
 	 */
 	public getObjectZIndex(object: GameObject): number {
@@ -349,6 +426,8 @@ export default class Renderer {
 				}
 			case EObjectType.BULLET:
 				return 2;
+			case EObjectType.ITEM:
+				return 5;
 		}
 	}
 	//#endregion

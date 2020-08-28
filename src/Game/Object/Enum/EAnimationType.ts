@@ -34,32 +34,32 @@ export const AnimationDefaults = {
 		loop: true
 	},
 	SPAWN: {
-		duration: 0,
-		frameRate: 0,
-		loop: false
+		duration: 1000,
+		frameRate: 1000 / 13,
+		loop: true
 	},
 	SCORE_100: {
-		duration: 0,
+		duration: 1000,
 		frameRate: 0,
 		loop: false
 	},
 	SCORE_200: {
-		duration: 0,
+		duration: 1000,
 		frameRate: 0,
 		loop: false
 	},
 	SCORE_300: {
-		duration: 0,
+		duration: 1000,
 		frameRate: 0,
 		loop: false
 	},
 	SCORE_400: {
-		duration: 0,
+		duration: 1000,
 		frameRate: 0,
 		loop: false
 	},
 	SCORE_500: {
-		duration: 0,
+		duration: 1000,
 		frameRate: 0,
 		loop: false
 	}

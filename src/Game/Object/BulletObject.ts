@@ -1,11 +1,12 @@
 import MovingObject, { calculateMove } from "./MovingObject";
-import EObjectType from "./EObjectType";
+import EObjectType from "./Enum/EObjectType";
 import EDirection from "../../Utils/EDirection";
 import { Point } from "../../Utils/UnitTypes";
 import Game from "../Game";
 import TankObject from "./TankObject";
 import AnimationObject from "./AnimationObject";
-import EAnimationType from "./EAnimationType";
+import EAnimationType from "./Enum/EAnimationType";
+import { deepClone } from "../../Utils/Utils";
 
 export const BULLET_SLOW = 4;
 export const BULLET_FAST = 6;
@@ -23,27 +24,36 @@ export default class BulletObject extends MovingObject {
 	}
 
 	move(): void {
-		let changed = this.position;
-		calculateMove(changed, this._direction, this._speed);
+		let original = deepClone(this.position) as Point;
+		calculateMove(this.position, this._direction, this._speed);
 		this._game.log(`BULLET [${this.id}] MOVED -> [x:${this.position.x}], y:[${this.position.y}]`);
 
-		let test_visible = this._game.testVisibility(this, this._game.getSprite(this));
+		let test_visible = this._game.testVisibility(this);
 		let test_collision = this._game.collisionTest(this);
 
 		if (test_visible == false || test_collision.length > 0) {
+			this.position = original;
 			this._game.log(`BULLET [${this.id}] EXPLODED.`);
-			this.explode();
+			let exploded = true;
 			test_collision.forEach(object => {
+				if (object.objectType === EObjectType.BULLET) {
+					exploded = false;
+				}
+				if (object.objectType === EObjectType.TANK && (object as TankObject).isInvincible) {
+					exploded = false;
+				}
 				object.hit(this);
 			})
+
+			this.explode(exploded);
 		}
 	}
 
 	hit() {
-		this.explode();
+		this.explode(false);
 	}
 
-	explode() {
+	explode(animation: boolean) {
 		let animationPosition: Point;
 		let size = this._game.getSprite(this).size;
 
@@ -59,15 +69,10 @@ export default class BulletObject extends MovingObject {
 			};
 		}
 
-		this._game.insertObject(new AnimationObject(
-			this._game,
-			EAnimationType.EXPLOSION_SMALL,
-			this.position,
-			200,
-			200/4
-		));
-
-		this.remove();
+		if (animation) {
+			this._game.startAnimation(this, EAnimationType.EXPLOSION_SMALL);
+			this.remove();
+		}
 	}
 
 	remove() {

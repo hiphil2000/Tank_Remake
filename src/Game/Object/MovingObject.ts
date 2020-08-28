@@ -1,6 +1,6 @@
 import GameObject from "./GameObject";
 import Game from "../Game";
-import EObjectType from "./EObjectType";
+import EObjectType from "./Enum/EObjectType";
 import { Point } from "../../Utils/UnitTypes";
 import EDirection from "../../Utils/EDirection";
 

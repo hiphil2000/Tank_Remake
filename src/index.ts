@@ -34,7 +34,6 @@ mainTank_color.addEventListener("change", () => {updateTank()});
 mainTank_invincible.addEventListener("click", () => { game.mainTank.invincible(); });
 mainTank_hit.addEventListener("click", () => { game.mainTank.hit(); });
 let objectFinder = setInterval(() => {
-	console.log("!");
 	objects.innerHTML = 
 	`
 	<tr>

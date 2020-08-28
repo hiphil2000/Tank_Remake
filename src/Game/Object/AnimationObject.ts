@@ -1,9 +1,9 @@
 import GameObject from "./GameObject";
 import Game from "../Game";
-import EObjectType from "./EObjectType";
+import EObjectType from "./Enum/EObjectType";
 import { Point } from "../../Utils/UnitTypes";
 import { Guid } from "../../Utils/Utils";
-import EAnimationType from "./EAnimationType";
+import EAnimationType from "./Enum/EAnimationType";
 import SPRTIE_DEF from "../../Render/Sprite/SpriteDefinition";
 
 

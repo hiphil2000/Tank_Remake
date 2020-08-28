@@ -8,12 +8,15 @@ import EDirection from "../Utils/EDirection";
 import IKeyState from "./InputManage/IKeyState";
 import EKeys, { EKeysToEDirection } from "./InputManage/EKeys";
 import { SpriteDef } from "../Render/Sprite/SpriteDefinition";
-import EObjectType from "./Object/EObjectType";
+import EObjectType from "./Object/Enum/EObjectType";
 import BulletObject from "./Object/BulletObject";
 import { Point } from "../Utils/UnitTypes";
 import AnimationObject from "./Object/AnimationObject";
-import EAnimationType, { AnimationValue, AnimationDefaults } from "./Object/EAnimationType";
+import EAnimationType, { AnimationValue, AnimationDefaults } from "./Object/Enum/EAnimationType";
 import BlockObject from "./Object/BlockObject";
+import ItemObject from "./Object/ItemObject";
+import EItemType from "./Object/Enum/EItemType";
+import ETankType from "./Object/Enum/ETankType";
 
 export const MAIN_TANK_ID = 'MAIN';
 
@@ -50,6 +53,9 @@ export default class Game {
 	get isTankMoveReady(): boolean {
 		let mainTank = this.mainTank;
 		if (mainTank == null) {
+			return false;
+		}
+		if (mainTank.visible === false) {
 			return false;
 		}
 		if ((this._keyState.ArrowUp === true && mainTank.direction == EDirection.up) || 
@@ -137,14 +143,14 @@ export default class Game {
 			return found;
 		}
 
-		let objectSprite = this._renderer.getSpriteData(object);
-
 		this._gameData.objects.forEach(item => {
-			if (item.objectType === EObjectType.ANIMATION) {
+			if (item == object) {
 				return;
 			}
 
-			if (item.objectType === EObjectType.BLOCK) {
+			if (item.objectType === EObjectType.ANIMATION) {
+				return;
+			} else if (item.objectType === EObjectType.BLOCK) {
 				let blockType = (item as BlockObject).blockType;
 				if ((object.objectType === EObjectType.TANK || object.objectType === EObjectType.BULLET) && blockType === EBlockType.BUSH) {
 					return;
@@ -152,27 +158,30 @@ export default class Game {
 				if (object.objectType === EObjectType.BULLET && blockType === EBlockType.WATER) {
 					return
 				}
-			}
-
-			if (item.objectType === EObjectType.TANK) {
+			} else if (item.objectType === EObjectType.TANK) {
 				if (object.objectType === EObjectType.BULLET) {
 					if (item.id === (object as BulletObject).parentId) {
 						return;
 					}
 				}
-			}
-
-			if (item.objectType === EObjectType.BULLET) {
+			} else if (item.objectType === EObjectType.BULLET) {
 				if (object.objectType === EObjectType.TANK) {
+					return;
+				}
+			} else if (item.objectType === EObjectType.ITEM) {
+				if (object.objectType === EObjectType.BULLET) {
 					return;
 				}
 			}
 
-			let spriteData = this._renderer.getSpriteData(item);
+			let test = false;
+			if (item.objectType === EObjectType.BLOCK) {
+				test = this._renderer.BlockCollisionTest(item as BlockObject, object);
+			} else {
+				test = this._renderer.ObjectCollisionTest(object, item);
+			}
 
-			let test = this._renderer.rectangleCollisionTest(object, objectSprite, item, spriteData);
-
-			if (item != object && test) {
+			if (test === true) {
 				found.push(item);
 			}
 		})
@@ -214,8 +223,8 @@ export default class Game {
 	 * @param object object for test
 	 * @param sprite object's sprite data for size
 	 */
-	public testVisibility(object: GameObject, sprite: SpriteDef): boolean {
-		return this._renderer.testVisibility(object, sprite);
+	public testVisibility(object: GameObject): boolean {
+		return this._renderer.objectVisibleTest(object);
 	}
 
 	/**
@@ -240,15 +249,11 @@ export default class Game {
 		this._gameData = {
 			gameType: gameType,
 			levelData: level,
+			life: 5,
 			objects: objects
 		} as IGameData
 
-		this.createMainTank(
-			this._renderer.randomPoint({width: 32, height: 32}),
-			EDirection.up,
-			ETankColor.YELLOW,
-			0
-		);
+		this.spawnTank(ETankType.PLAYER_TANK);
 		
 		this.insertObject(
 			new BlockObject(
@@ -259,7 +264,7 @@ export default class Game {
 					bottomLeft: true,
 					bottomRight: true,
 					topLeft: true,
-					topRight: true
+					topRight: false
 				}
 			)
 		)
@@ -270,7 +275,7 @@ export default class Game {
 				EBlockType.IRON,
 				{ x: 3 * 32, y: 6 * 32 },
 				{
-					bottomLeft: true,
+					bottomLeft: false,
 					bottomRight: true,
 					topLeft: true,
 					topRight: true
@@ -301,10 +306,46 @@ export default class Game {
 					bottomLeft: true,
 					bottomRight: true,
 					topLeft: true,
-					topRight: true
+					topRight: false
 				}
 			)
 		)
+
+		this.insertObject(
+			new ItemObject(
+				this,
+				EItemType.BOMB,
+				{ x: 4 * 32, y: 8 * 32 }
+			)
+		)
+
+		this.insertObject(
+			new ItemObject(
+				this,
+				EItemType.STAR,
+				{ x: 4 * 32, y: 9 * 32 }
+			)
+		)
+	}
+
+	public spawnTank(tankType: ETankType) {
+		if (tankType === ETankType.PLAYER_TANK) {
+			if (this._gameData.life <= 0) {
+				return;
+			}
+			this.createPlayerTank(
+				this._renderer.randomPoint({width: 32, height: 32}),
+				EDirection.up,
+				ETankColor.YELLOW,
+				0
+			);
+			this._gameData.life--;
+		} else if (tankType === ETankType.ENEMY_TANK || tankType === ETankType.ENEMY_ITEM_TANK) {
+			this.createEnemyTank(
+				this._renderer.randomPoint({width: 32, height: 32}),
+				EDirection.up
+			)
+		}
 	}
 	//#endregion
 	
@@ -348,20 +389,24 @@ export default class Game {
 		this._keyState.ArrowLeft = false;
 	}
 
-	private createMainTank(position: Point, direction: EDirection, tankColor: ETankColor, tankLevel: number) {
+	private createPlayerTank(position: Point, direction: EDirection, tankColor: ETankColor, tankLevel: number) {
 		if (this.mainTank) {
 			this.removeObject(this.mainTank);
 		}
 
 		this.insertObject(new TankObject(
 			this,
+			ETankType.PLAYER_TANK,
 			position,
 			direction,
 			tankColor,
 			tankLevel,
 			MAIN_TANK_ID
 		));
-		this.mainTank.invincible();
+	}
+
+	private createEnemyTank(position: Point, direction: EDirection) {
+
 	}
 	//#endregion
 	
