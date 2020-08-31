@@ -1,10 +1,13 @@
 import GameObject from "./GameObject"
 import EObjectType from "./Enum/EObjectType";
-import { Guid } from "../../Utils/Utils";
-import { Point } from "../../Utils/UnitTypes";
+import { Guid, max, removeDuplicate } from "../../Utils/Utils";
+import { Point, Size } from "../../Utils/UnitTypes";
 import Game from "../Game";
 import BulletObject from "./BulletObject";
 import EDirection from "../../Utils/EDirection";
+import MovingObject from "./MovingObject";
+import { getSpriteSize } from "../../Render/Sprite/SpriteData";
+import { BlockCollisionTest } from "../../Utils/CollisionTest";
 
 export type BlockRow = [boolean, boolean, boolean, boolean];
 export type BlockState4x4 = [BlockRow, BlockRow, BlockRow, BlockRow];
@@ -42,28 +45,52 @@ export function BlockState2x2To4x4(x2: BlockState2x2): BlockState4x4 {
 	return x4;
 }
 
+export function BlockState4x4To2x2(x4: BlockState4x4): BlockState2x2 {
+	let x2: BlockState2x2 = {
+		topLeft: false,
+		topRight: false,
+		bottomLeft: false,
+		bottomRight: false
+	}
+
+	if (x4[0][0] || x4[0][1] || x4[1][0] || x4[1][1]) {
+		x2.topLeft = true;
+	}
+	if (x4[0][2] || x4[0][3] || x4[1][2] || x4[1][3]) {
+		x2.topRight = true;
+	}
+	if (x4[2][0] || x4[2][1] || x4[3][0] || x4[3][1]) {
+		x2.bottomLeft = true;
+	}
+	if (x4[2][2] || x4[2][3] || x4[3][2] || x4[3][3]) {
+		x2.bottomRight = true;
+	}
+
+	return x2;
+}
+
 export default class BlockObject extends GameObject {
 	public blockType: EBlockType;
-	private _blockState: BlockState2x2;
+	private _blockState: BlockState4x4;
 	
 	constructor(game: Game, blockType: EBlockType, position: Point, blockState2x2: BlockState2x2) {
 		super(game, EObjectType.BLOCK, position, Guid.newGuid());
 		this.blockType = blockType;
-		this._blockState = blockState2x2;
+		this._blockState = BlockState2x2To4x4(blockState2x2);
 	}
 
 	//#region getter setter
 	get blockState4x4(): BlockState4x4 {
-		return BlockState2x2To4x4(this._blockState);
+		return this._blockState;
 	}
 
 	get blockState2x2(): BlockState2x2 {
-		return this._blockState;
+		return BlockState4x4To2x2(this._blockState);
 	}
 	//#endregion
 
 	public findCellPosition(row: number, column: number):Point {
-		let blockSize = this._game.getSprite(this).size;
+		let blockSize = getSpriteSize(this);
 		return {
 			x: this.position.x + (blockSize.width / 4) * column,
 			y: this.position.y + (blockSize.width / 4) * row
@@ -74,60 +101,70 @@ export default class BlockObject extends GameObject {
 		if (!(eventOrigin instanceof BulletObject)) {
 			return;
 		}
-		let bullet = eventOrigin as BulletObject;
+		const bullet = eventOrigin as BulletObject;
+		if (bullet.parent.tankLevel < 3 && this.blockType === EBlockType.IRON) {
+			return;
+		}
 
+		const blockSize = getSpriteSize(this);
+
+		const collisionCells = BlockCollisionTest(this, bullet);
+		const xPos = removeDuplicate(collisionCells.map(point => {
+			return (point.x - this.position.x) / (blockSize.width / 4); 
+		}));
+		const yPos = removeDuplicate(collisionCells.map(point => {
+			return (point.y - this.position.y) / (blockSize.height / 4);
+		}));
+
+		const b44 = this.blockState4x4;
+		if (bullet.direction === EDirection.up || bullet.direction === EDirection.down) {
+			if (xPos.includes(0) || xPos.includes(1)) {
+				b44[yPos[0]][0] = false;
+				b44[yPos[0]][1] = false;
+				if (yPos[0] + 1 < 4 && bullet.parent.tankLevel > 1) {
+					b44[yPos[0] + 1][0] = false;
+					b44[yPos[0] + 1][1] = false;
+				}
+			}
+			if (xPos.includes(2) || xPos.includes(3)) {
+				b44[yPos[0]][2] = false;
+				b44[yPos[0]][3] = false;
+				if (yPos[0] + 1 < 4 && bullet.parent.tankLevel > 1) {
+					b44[yPos[0] + 1][2] = false;
+					b44[yPos[0] + 1][3] = false;
+				}
+			}
+		} else if (bullet.direction === EDirection.left || bullet.direction === EDirection.right) {
+			if (yPos.includes(0) || yPos.includes(1)) {
+				b44[0][xPos[0]] = false;
+				b44[1][xPos[0]] = false;
+				if (xPos[0] + 1 < 4 && bullet.parent.tankLevel > 1) {
+					b44[0][xPos[0] + 1] = false;
+					b44[1][xPos[0] + 1] = false;
+				}
+			}
+			if (yPos.includes(2) || yPos.includes(3)) {
+				b44[2][xPos[0]] = false;
+				b44[3][xPos[0]] = false;
+				if (xPos[0] + 1 < 4 && bullet.parent.tankLevel > 1) {
+					b44[2][xPos[0] + 1] = false;
+					b44[3][xPos[0] + 1] = false;
+				}
+			}
+		}
+
+		let available = false;
+		b44.forEach(row => {
+			row.forEach(cell => {
+				if (cell === true) {
+					available = cell;
+				}
+			});
+		});
+		if (available === false) {
+			this.remove();
+		}
+
+		console.log(this.blockState4x4);
 	}
-
-	// private getLastCorner(bullet: BulletObject): Array<number> {
-	// 	let blockSize = this._game.getSprite(this).size;
-	// 	let b44 = this.blockState4x4;
-	// 	let corners: Array<number>;
-
-	// 	switch(bullet.direction) {
-	// 		case EDirection.left:
-	// 			corners = new Array(4).fill(-1, 0);
-	// 			for(let i = 0; i < b44.length; i++) {
-	// 				corners[i] = b44[i].lastIndexOf(true);
-	// 			}
-	// 			return [
-	// 				Math.max(corners[0], corners[1]),
-	// 				Math.max(corners[2], corners[3])
-	// 			]
-	// 		case EDirection.up:
-	// 			corners = new Array(4).fill(-1, 0);
-	// 			for(let i = 0; i < blockSize.width / 8; i++) {
-	// 				for(let j = 0; j < blockSize.height / 8; j++) {
-	// 					if (b44[j][i] == true && j > corners[i]) {
-	// 						corners[i] = j;
-	// 					}
-	// 				}
-	// 			}
-	// 			return [
-	// 				Math.max(corners[0], corners[1]),
-	// 				Math.max(corners[2], corners[3])
-	// 			]
-	// 		case EDirection.right:
-	// 			corners = new Array(4).fill(99, 0);
-	// 			for(let i = 0; i < b44.length; i++) {
-	// 				corners[i] = b44[i].indexOf(true);
-	// 			}
-	// 			return [
-	// 				Math.min(corners[0], corners[1]),
-	// 				Math.min(corners[2], corners[3])
-	// 			]
-	// 		case EDirection.down:		
-	// 			corners = new Array(4).fill(99, 0);
-	// 			for(let i = blockSize.width / 8 - 1; i >= 0; i--) {
-	// 				for(let j = blockSize.height / 8 - 1; j >= 0; j--) {
-	// 					if (b44[j][i] == true && j < corners[i]) {
-	// 						corners[i] = j;
-	// 					}
-	// 				}
-	// 			}
-	// 			return [
-	// 				Math.min(corners[0], corners[1]),
-	// 				Math.min(corners[2], corners[3])
-	// 			]
-	// 	}
-	// }
 }

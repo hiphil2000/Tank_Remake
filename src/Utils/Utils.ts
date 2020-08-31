@@ -21,3 +21,33 @@ export class Guid {
 		});
 	}
 }
+
+/**
+ * find maximum number from number array
+ * @param numbers given numbers
+ */
+export function max(numbers: Array<number>) {
+	return Math.max.apply(null, numbers);
+}
+
+/**
+ * find minimum number from number array
+ * @param numbers given numbers
+ */
+export function min(numbers: Array<number>) {
+	return Math.min.apply(null, numbers);
+}
+
+/**
+ * get a random value between range
+ * @param min range_min
+ * @param max range_max
+ */
+export function getRandomRange(min: number, max: number): number {
+	return Math.floor(Math.random() * (max - min) + min);
+}
+
+export function removeDuplicate(array: Array<any>): Array<any> {
+	let set = new Set(array);
+	return [...set];
+}

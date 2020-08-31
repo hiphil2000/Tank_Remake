@@ -3,12 +3,15 @@ import GameObject from "../Game/Object/GameObject";
 import EObjectType from "../Game/Object/Enum/EObjectType";
 import SPRTIE_DEF, { SpriteDef } from "./Sprite/SpriteDefinition";
 import TankObject from "../Game/Object/TankObject";
-import { Point, Size } from "../Utils/UnitTypes";
 import BulletObject from "../Game/Object/BulletObject";
 import AnimationObject from "../Game/Object/AnimationObject";
 import EAnimationType from "../Game/Object/Enum/EAnimationType";
 import BlockObject from "../Game/Object/BlockObject";
 import ItemObject from "../Game/Object/ItemObject";
+import { getSpriteData } from "./Sprite/SpriteData";
+import EDirection from "../Utils/EDirection";
+import { Point, Size } from "../Utils/UnitTypes";
+import { getRandomRange } from "../Utils/Utils";
 
 export const MAX_FPS = 60;
 export const DRAWING_CONST = {
@@ -23,6 +26,10 @@ export const DRAWING_CONST = {
 			top: 24,
 			bottom: 24,
 			right: 32
+		},
+		screen: {
+			width: 32 * 13,
+			height: 32 * 13
 		}
 	},
 	debug: {
@@ -69,8 +76,8 @@ export default class Renderer {
 	}
 
 	private initScreen() {
-		this._canvas.width = 600;
-		this._canvas.height = 600;
+		this._canvas.width = DRAWING_CONST.sizes.screen.width;
+		this._canvas.height = DRAWING_CONST.sizes.screen.height;
 	}
 
 	private render() {
@@ -85,35 +92,33 @@ export default class Renderer {
 			
 			// process move action
 			// main tank moves
-			let mainTank = this._game.mainTank;
-			if (this._game.isTankMoveReady) {
-				mainTank.move();
+			const mainTank = this._game.mainTank;
+			if ( mainTank != null && mainTank.visible === true && this.checkKeyStateSync())
+			{
+				mainTank.move();	
 			}
 
 			// other objects
 			let objects = this._game.getObjects();
 			if (objects){
 				objects.forEach(object => {
-					switch(object.objectType) {
-						case EObjectType.BULLET:
-							(object as BulletObject).move();
-							break;
-						case EObjectType.ANIMATION:
-							let animation = object as AnimationObject;
-							if (animation.expireTime < this._fps.now) {
-								animation.expire();
-							}
-							
-							if (animation.animationType === EAnimationType.INVINCIBLE) {
-								let tankSize = this.getSpriteData(this._game.mainTank).size;
-								animation.animationPoint = {
-									x: mainTank.position.x + tankSize.width / 2,
-									y: mainTank.position.y + tankSize.height / 2
-								};
-							}
+					if (object.objectType === EObjectType.BULLET) {
+						(object as BulletObject).move();
+					} else if (object.objectType === EObjectType.ANIMATION) {
+						let animation = object as AnimationObject;
+						if (animation.expireTime < this._fps.now) {
+							animation.expire();
+						}
+						
+						if (animation.animationType === EAnimationType.INVINCIBLE) {
+							let tankSize = getSpriteData(this._game.mainTank).size;
+							animation.animationPoint = {
+								x: mainTank.position.x + tankSize.width / 2,
+								y: mainTank.position.y + tankSize.height / 2
+							};
+						}
 
-							animation.nextSpritePosition();
-							break;
+						animation.nextSpritePosition();
 					}
 				})
 			}
@@ -142,6 +147,20 @@ export default class Renderer {
 		}
 	}
 
+	private checkKeyStateSync(): boolean {
+		const mainTank = this._game.mainTank;
+		const keyState = this._game.keyState;
+		if ((keyState.ArrowUp === true && mainTank.direction == EDirection.up) || 
+		(keyState.ArrowRight === true && mainTank.direction == EDirection.right) ||
+		(keyState.ArrowDown === true && mainTank.direction == EDirection.down) ||
+		(keyState.ArrowLeft === true && mainTank.direction == EDirection.left)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	//#region drawing methods
 	private drawBackground(ctx: CanvasRenderingContext2D) {
 		ctx.save();
 
@@ -176,7 +195,7 @@ export default class Renderer {
 
 		for(let i = 0; i < objects.length; i++) {
 			let object = objects[i];
-			let sprite = this.getSpriteData(object);
+			let sprite = getSpriteData(object);
 			
 			this.drawObject(ctx, object, sprite);
 
@@ -278,86 +297,11 @@ export default class Renderer {
 		ctx.restore();
 
 	}
+	//#endregion
 
 	//#region public methods
-	/**
-	 * Find sprite data for given object
-	 * @param object found sprite definition
-	 */
-	public getSpriteData(object: GameObject): SpriteDef {
-		switch(object.objectType) {
-			case EObjectType.TANK:
-				let tank = object as TankObject;
-				return SPRTIE_DEF.TANK[tank.tankColor][tank.tankLevel][tank.direction][tank.spritePosition];
-			case EObjectType.BULLET:
-				let bullet = object as BulletObject;
-				return SPRTIE_DEF.BULLET[bullet.direction];
-			case EObjectType.ANIMATION:
-				let animation = object as AnimationObject;
-				return SPRTIE_DEF.ANIMATION[animation.animationType][animation.spritePosition];
-			case EObjectType.BLOCK:
-				let block = object as BlockObject;
-				return SPRTIE_DEF.BLOCK[block.blockType][block.spritePosition];
-			case EObjectType.ITEM:
-				let item = object as ItemObject;
-				return SPRTIE_DEF.ITEM[item.itemType];
-		}
-	}
 	
-	/**
-	 * Tests two objects are collisions (rectangle bounding box collision test)
-	 * @param object1 first object
-	 * @param sprite1 first object's sprite data for size
-	 * @param object2 second object
-	 * @param sprite2 second object's sprite data for size
-	 */
-	public ObjectCollisionTest(object1: GameObject, object2: GameObject): boolean {
-		let size1 = this.getSpriteData(object1).size;
-		let size2 = this.getSpriteData(object2).size;
-
-		return this.RectangleCollisionTest(object1.position, size1, object2.position, size2);
-	}
-
-	public BlockCollisionTest(block: BlockObject, object: GameObject): boolean {
-		let blockSize = this.getSpriteData(block).size;
-		let objectSize = this.getSpriteData(object).size;
-		
-		let cellPosition: Point;
-		let cellSize = {
-			width: blockSize.width / 4,
-			height: blockSize.height / 4
-		} as Size;
-
-		for(let i = 0; i < block.blockState4x4.length; i++) {
-			for(let j = 0; j < block.blockState4x4[i].length; j++) {
-				if (block.blockState4x4[i][j] == false) {
-					continue;
-				}
-
-				cellPosition = {
-					x: block.position.x + (blockSize.width / 4) * j,
-					y: block.position.y + (blockSize.height / 4) * i
-				} as Point;
-				if (this.RectangleCollisionTest(cellPosition, cellSize, object.position, objectSize)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	private RectangleCollisionTest(pos1: Point, size1: Size, pos2: Point, size2: Size) {
-		if (pos1.x + size1.width >= pos2.x &&
-			pos1.x <= pos2.x + size2.width &&
-			pos1.y + size1.height >= pos2.y &&
-			pos1.y <= pos2.y + size2.height
-		) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+	
 	/**
 	 * Test object is visible
 	 * @param object object for test
@@ -365,7 +309,7 @@ export default class Renderer {
 	 */
 	public objectVisibleTest(object: GameObject): boolean { 
 		let position = object.position;
-		let size = this.getSpriteData(object).size;
+		let size = getSpriteData(object).size;
 		let ctx = this._canvas.getContext('2d');
 		if (position.x >= DRAWING_CONST.sizes.frame.left &&
 			position.x + size.width <= ctx.canvas.clientWidth - DRAWING_CONST.sizes.frame.right &&
@@ -380,17 +324,13 @@ export default class Renderer {
 
 	public randomPoint(size: Size): Point {
 		return {
-			x: this.getRandomRange(
+			x: getRandomRange(
 				DRAWING_CONST.sizes.frame.left,
 				this._canvas.width - DRAWING_CONST.sizes.frame.right - size.width),
-			y: this.getRandomRange(
+			y: getRandomRange(
 				DRAWING_CONST.sizes.frame.top,
 				this._canvas.height - DRAWING_CONST.sizes.frame.bottom - size.height),
 		};
-	}
-
-	private getRandomRange(min: number, max: number): number {
-		return Math.floor(Math.random() * (max - min) + min);
 	}
 
 	/**

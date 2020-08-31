@@ -5,6 +5,7 @@ import TankObject, { ETankColor } from "./Object/TankObject";
 import EGameType from "./GameData/EGameType";
 import ILevel from "./Level/ILevel";
 import EDirection from "../Utils/EDirection";
+import { BlockCollisionTest, ObjectCollisionTest, RectangleCollisionTest } from "../Utils/CollisionTest";
 import IKeyState from "./InputManage/IKeyState";
 import EKeys, { EKeysToEDirection } from "./InputManage/EKeys";
 import { SpriteDef } from "../Render/Sprite/SpriteDefinition";
@@ -17,6 +18,9 @@ import BlockObject from "./Object/BlockObject";
 import ItemObject from "./Object/ItemObject";
 import EItemType from "./Object/Enum/EItemType";
 import ETankType from "./Object/Enum/ETankType";
+import MovingObject from "./Object/MovingObject";
+import { getSpriteData } from "../Render/Sprite/SpriteData";
+
 
 export const MAIN_TANK_ID = 'MAIN';
 
@@ -47,23 +51,6 @@ export default class Game {
 			return found[0] as TankObject;
 		} else {
 			return null;
-		}
-	}
-	
-	get isTankMoveReady(): boolean {
-		let mainTank = this.mainTank;
-		if (mainTank == null) {
-			return false;
-		}
-		if (mainTank.visible === false) {
-			return false;
-		}
-		if ((this._keyState.ArrowUp === true && mainTank.direction == EDirection.up) || 
-		(this._keyState.ArrowRight === true && mainTank.direction == EDirection.right) ||
-		(this._keyState.ArrowDown === true && mainTank.direction == EDirection.down) ||
-		(this._keyState.ArrowLeft === true && mainTank.direction == EDirection.left))
-		{
-			return true;
 		}
 	}
 	//#endregion
@@ -176,9 +163,9 @@ export default class Game {
 
 			let test = false;
 			if (item.objectType === EObjectType.BLOCK) {
-				test = this._renderer.BlockCollisionTest(item as BlockObject, object);
+				test = BlockCollisionTest(item as BlockObject, object).length > 0;
 			} else {
-				test = this._renderer.ObjectCollisionTest(object, item);
+				test = ObjectCollisionTest(object, item);
 			}
 
 			if (test === true) {
@@ -193,7 +180,7 @@ export default class Game {
 		let animationPoint: Point;
 		if (target instanceof GameObject) {
 			let object = target as GameObject;
-			let size = this.getSprite(object).size;
+			let size = getSpriteData(object).size;
 			animationPoint = {
 				x: object.position.x + size.width / 2,
 				y: object.position.y + size.height / 2
@@ -225,14 +212,6 @@ export default class Game {
 	 */
 	public testVisibility(object: GameObject): boolean {
 		return this._renderer.objectVisibleTest(object);
-	}
-
-	/**
-	 * Find sprite data for given object (Port of Renderer.getSprite)
-	 * @param object found sprite definition
-	 */
-	public getSprite(object: GameObject): SpriteDef {
-		return this._renderer.getSpriteData(object);
 	}
 
 	/**
@@ -334,8 +313,12 @@ export default class Game {
 				return;
 			}
 			this.createPlayerTank(
-				this._renderer.randomPoint({width: 32, height: 32}),
-				EDirection.up,
+				// this._renderer.randomPoint({width: 32, height: 32}),
+				{
+					x: 3 * 32,
+					y: 3 * 32
+				},
+				EDirection.down,
 				ETankColor.YELLOW,
 				0
 			);

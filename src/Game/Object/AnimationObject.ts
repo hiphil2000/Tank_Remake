@@ -5,6 +5,7 @@ import { Point } from "../../Utils/UnitTypes";
 import { Guid } from "../../Utils/Utils";
 import EAnimationType from "./Enum/EAnimationType";
 import SPRTIE_DEF from "../../Render/Sprite/SpriteDefinition";
+import { getSpriteSize } from "../../Render/Sprite/SpriteData";
 
 
 export default class AnimationObject extends GameObject {
@@ -77,7 +78,7 @@ export default class AnimationObject extends GameObject {
 	//#endregion
 
 	private updatePosition() {
-		let spriteData = this._game.getSprite(this).size;
+		let spriteData = getSpriteSize(this);
 		this._positon = {
 			x: this._animationPoint.x - spriteData.width / 2,
 			y: this._animationPoint.y - spriteData.height / 2

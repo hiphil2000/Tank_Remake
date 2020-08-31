@@ -65,27 +65,26 @@ export default class TankObject extends MovingObject {
 	
 	//#region implements of MovingObject	
 	move() {
-		let original = deepClone(this.position) as Point;
 		calculateMove(this.position, this._direction, this._speed);
 		this._game.log(`TANK [${this.id}] MOVED -> [ x: ${this.position.x}, y: ${this.position.y} ]`)
 		
 		// test movement is valid
 		let test_visible = this._game.testVisibility(this);
 		let test_collision = this._game.collisionTest(this);
-		let collision_items = test_collision.filter(x => { return x.objectType === EObjectType.ITEM; });
 
-		// execute hit event collision items
-		if (collision_items.length > 0) {
-			collision_items.forEach(item => {
-				item.hit(this);
+		if (test_visible == false && test_collision.length == 0) {
+			this.fitToBorder();
+		} else if (test_collision.length > 0) {
+			test_collision.forEach(object => {
+				if (object.objectType === EObjectType.ITEM) {
+					object.hit(this);
+				} else {
+					this.fitToObject(object);
+					this._game.log(`TANK [${this.id}] MOVES -> BLOCKED!! [ x: ${this.position.x}, y: ${this.position.y} ]`)
+				}
 			});
 		}
 
-		// if movement is not valid, rollback movement
-		if (!test_visible || test_collision.length - collision_items.length > 0) {
-			this.position = original;
-			this._game.log(`TANK [${this.id}] MOVES -> BLOCKED!! [ x: ${this.position.x}, y: ${this.position.y} ]`)
-		}
 		this.nextSpritePosition();
 	}
 
