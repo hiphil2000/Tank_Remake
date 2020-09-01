@@ -3,4 +3,7 @@ const enum EBlockType {
 	IRON = 'IRON',
 	BUSH = 'BUSH',
 	WATER = 'WATER',
+	EAGLE = 'EAGLE'
 }
+
+export default EBlockType;

@@ -7,6 +7,7 @@ import AnimationObject from "../../Game/Object/AnimationObject";
 import BlockObject from "../../Game/Object/BlockObject";
 import ItemObject from "../../Game/Object/ItemObject";
 import { Size } from "../../Utils/UnitTypes";
+import ESystemSprite from "./ESystemSprite";
 
 /**
  * Find sprite data for given object
@@ -29,6 +30,18 @@ export function getSpriteData(object: GameObject): SpriteDef {
 		case EObjectType.ITEM:
 			let item = object as ItemObject;
 			return SPRTIE_DEF.ITEM[item.itemType];
+	}
+}
+
+export function getSystemSprite(spriteType: ESystemSprite, number: number = 0) {
+	switch (spriteType) {
+		case ESystemSprite.NULL:
+		case ESystemSprite.TANK_ICON:
+		case ESystemSprite.STAGE:
+		case ESystemSprite.FRAME:
+			return SPRTIE_DEF.SYSTEM[spriteType];
+		case ESystemSprite.NUMBER:
+			return SPRTIE_DEF.SYSTEM.NUMBER[number];
 	}
 }
 

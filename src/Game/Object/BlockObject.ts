@@ -8,6 +8,7 @@ import EDirection from "../../Utils/EDirection";
 import MovingObject from "./MovingObject";
 import { getSpriteSize } from "../../Render/Sprite/SpriteData";
 import { BlockCollisionTest } from "../../Utils/CollisionTest";
+import EBlockType from "./Enum/EBlockType";
 
 export type BlockRow = [boolean, boolean, boolean, boolean];
 export type BlockState4x4 = [BlockRow, BlockRow, BlockRow, BlockRow];
@@ -101,6 +102,12 @@ export default class BlockObject extends GameObject {
 		if (!(eventOrigin instanceof BulletObject)) {
 			return;
 		}
+		if (this.blockType === EBlockType.EAGLE) {
+			this._spritePosition = 1;
+			this._game.gameover();
+			return;
+		}
+
 		const bullet = eventOrigin as BulletObject;
 		if (bullet.parent.tankLevel < 3 && this.blockType === EBlockType.IRON) {
 			return;
@@ -164,7 +171,5 @@ export default class BlockObject extends GameObject {
 		if (available === false) {
 			this.remove();
 		}
-
-		console.log(this.blockState4x4);
 	}
 }

@@ -1,10 +1,12 @@
 import Game from "./Game/Game";
 import { ETankColor } from "./Game/Object/TankObject";
-const spriteImage = require('./Render/Sprite/sprite.png');
+import Renderer from "./Render/Renderer";
+const spriteMainImage = require('./Render/Sprite/sprite_main.png');
+const spriteTItleImage = require('./Render/Sprite/sprite_title.png');
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
 // init game
-let game = new Game(canvas, './js/sprite.png');
+let game = new Game(canvas, './js/sprite_main.png', './js/sprite_title.png');
 
 //#region DEBUG
 const debug_btn = document.getElementById("debug");
@@ -43,11 +45,14 @@ let objectFinder = setInterval(() => {
 		<td>position</td>
 	</tr>
 	`;
+	if (!game.debug) {
+		return;
+	}
 	game.getObjects().forEach(object => {
 		objects.innerHTML = objects.innerHTML + 
 		`
 		<tr>
-			<td>${game.getObjectZIndex(object)}</td>
+			<td>${Renderer.getObjectZIndex(object)}</td>
 			<td>${object.id}</td>
 			<td>${object.objectType}</td>
 			<td>[x: ${object.position.x}, y: ${object.position.y}]</td>

@@ -5,17 +5,19 @@ import MovingObject, { calculateMove } from "./MovingObject";
 import EDirection from "../../Utils/EDirection";
 import BulletObject, { BULLET_SLOW, BULLET_FAST } from "./BulletObject";
 import SPRTIE_DEF, { SpriteDef } from "../../Render/Sprite/SpriteDefinition";
-import { Guid, deepClone } from "../../Utils/Utils";
+import { Guid } from "../../Utils/Utils";
 import EAnimationType from "./Enum/EAnimationType";
 import ETankType from "./Enum/ETankType";
 
 export const TANK_SPEED = 2;
+export const TANK_FIRE_DELAY = 100;
 
 export default class TankObject extends MovingObject {
 	private _tankType: ETankType;
 	private _tankColor: ETankColor;
 	private _tankLevel: number;
 	private _bullets: Array<string>;	// holds bullet's id
+	private _lastFired: number;
 
 	private _isInvincible: boolean = false;
 
@@ -27,6 +29,7 @@ export default class TankObject extends MovingObject {
 		this._tankLevel = tankLevel;
 		this._bullets = [];
 		this.visible = false;
+		this._lastFired = 0;
 		this._game.startAnimation(this, EAnimationType.SPAWN, null, animation => {
 			this.visible = true;
 			if (this == this._game.mainTank) {
@@ -103,7 +106,11 @@ export default class TankObject extends MovingObject {
 	
 	//#region public methods
 	public fire() {
-		this.createBullet();
+		let now = performance.now();
+		if (now - this._lastFired >= TANK_FIRE_DELAY) {
+			this._lastFired = now;
+			this.createBullet();
+		}
 	}
 
 	public invincible() {

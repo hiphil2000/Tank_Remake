@@ -1,0 +1,456 @@
+import ILevel from "./ILevel";
+import EBlockType from "../Object/Enum/EBlockType";
+import EDirection from "../../Utils/EDirection";
+import { EnemyType } from "../Object/Enum/ETankType";
+
+interface LevelDefinition {
+	[key: number]: ILevel
+}
+
+const BLOCK_FULL = {
+	bottomLeft: true,
+	bottomRight: true,
+	topLeft: true,
+	topRight: true
+}
+
+const BLOCK_HALF_HT = {
+	bottomLeft: false,
+	bottomRight: false,
+	topLeft: true,
+	topRight: true
+}
+const BLOCK_HALF_HB = {
+	bottomLeft: true,
+	bottomRight: true,
+	topLeft: false,
+	topRight: false
+}
+
+const BLOCK_HALF_VL = {
+	bottomLeft: true,
+	bottomRight: false,
+	topLeft: true,
+	topRight: false
+}
+const BLOCK_HALF_VR = {
+	bottomLeft: false,
+	bottomRight: true,
+	topLeft: false,
+	topRight: true
+}
+
+const DefaultLevels: LevelDefinition = {
+	1: {
+		levelId: 1,
+		levelName: 'LEVEL 1',
+		blocks: [
+			{
+				position: {x: 1, y: 1},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 3, y: 1},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 5, y: 1},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 7, y: 1},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 9, y: 1},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 11, y: 1},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 1, y: 2},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 3, y: 2},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 5, y: 2},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 7, y: 2},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 9, y: 2},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 11, y: 2},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 1, y: 3},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 3, y: 3},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 5, y: 3},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 6, y: 3},
+				type: EBlockType.IRON,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 7, y: 3},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 9, y: 3},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 11, y: 3},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 1, y: 4},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 3, y: 4},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 5, y: 4},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 7, y: 4},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 9, y: 4},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 11, y: 4},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 1, y: 5},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 3, y: 5},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 5, y: 5},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 7, y: 5},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 9, y: 5},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 11, y: 5},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 0, y: 6},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 2, y: 6},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 3, y: 6},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 5, y: 6},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 7, y: 6},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 9, y: 6},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 10, y: 6},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 12, y: 6},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 0, y: 7},
+				type: EBlockType.IRON,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 2, y: 7},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 3, y: 7},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 5, y: 7},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 7, y: 7},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 9, y: 7},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 10, y: 7},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 12, y: 7},
+				type: EBlockType.IRON,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 1, y: 8},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 3, y: 8},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 5, y: 8},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 6, y: 8},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 7, y: 8},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 9, y: 8},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 11, y: 8},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 1, y: 9},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 3, y: 9},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 5, y: 9},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 7, y: 9},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 9, y: 9},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 11, y: 9},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 1, y: 10},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 3, y: 10},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 5, y: 10},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 7, y: 10},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HT,
+			},
+			{
+				position: {x: 9, y: 10},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 11, y: 10},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 1, y: 11},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 3, y: 11},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 5, y: 11},
+				type: EBlockType.BRICK,
+				blockState: {
+					bottomLeft: false,
+					bottomRight: true,
+					topLeft: false,
+					topRight: false
+				},
+			},
+			{
+				position: {x: 6, y: 11},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_HB,
+			},
+			{
+				position: {x: 7, y: 11},
+				type: EBlockType.BRICK,
+				blockState: {
+					bottomLeft: true,
+					bottomRight: false,
+					topLeft: false,
+					topRight: false
+				},
+			},
+			{
+				position: {x: 9, y: 11},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 11, y: 11},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 5, y: 12},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_VR,
+			},
+			{
+				position: {x: 6, y: 12},
+				type: EBlockType.EAGLE,
+				blockState: BLOCK_FULL,
+			},
+			{
+				position: {x: 7, y: 12},
+				type: EBlockType.BRICK,
+				blockState: BLOCK_HALF_VL,
+			},
+		],
+		tanks: [
+			{
+				type: EnemyType.DEFAULT,
+			},
+			{
+				type: EnemyType.DEFAULT,
+			},
+			{
+				type: EnemyType.DEFAULT,
+			},
+			{
+				type: EnemyType.DEFAULT,
+			},
+		]
+	}
+}
+
+export default DefaultLevels;

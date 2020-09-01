@@ -6,11 +6,13 @@ html, body {
 
 #debugPalette {
 	width: 600px;
+	max-height: 480px;
+	overflow: auto;
 	padding: 5px;
 	height: auto;
 	display: inline-block;
 	position: absolute;
-	left: 416px;
+	left: 544px;
 	top: 0;
 	border: 1px solid black;
 }

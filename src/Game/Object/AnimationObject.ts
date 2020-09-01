@@ -19,8 +19,11 @@ export default class AnimationObject extends GameObject {
 	private _loop: boolean;
 	private _callback: (animation: AnimationObject) => void;
 
-	constructor(game: Game, animationType: EAnimationType, animationPoint: Point, duration: number, frameRate: number, loop: boolean = false, callback?: (animation: AnimationObject) => void) {
-		super(game, EObjectType.ANIMATION, animationPoint, Guid.newGuid());
+	constructor(game: Game, id: string, animationType: EAnimationType, animationPoint: Point, duration: number, frameRate: number, loop: boolean = false, callback?: (animation: AnimationObject) => void) {
+		if (id == null) {
+			id = Guid.newGuid();
+		}
+		super(game, EObjectType.ANIMATION, animationPoint, id);
 		this.animationType = animationType;
 		this._animationPoint = animationPoint;
 		this._spritePosition = 0;
@@ -54,6 +57,9 @@ export default class AnimationObject extends GameObject {
 	hit(): void {}
 
 	public nextSpritePosition(): number {
+		if (this._frameCount < 2) {
+			return;
+		}
 		this._game.log(`[${this.spritePosition} / ${this._frameCount - 1}]${performance.now() - this._currentTime} >= ${this._frameRate}`);
 		if (performance.now() - this._currentTime >= this._frameRate) {
 			this._currentTime = performance.now();
@@ -68,9 +74,11 @@ export default class AnimationObject extends GameObject {
 		return this._spritePosition;
 	}
 
-	public expire() {
+	public expire(remove: boolean = true) {
 		this._game.log(`ANIMATION ${this.id} HAS BEEN EXPIRED. (${performance.now})`);
-		this.remove();
+		if (remove) {
+			this.remove();
+		}
 		if (this._callback) {
 			this._callback(this);
 		}

@@ -1,4 +1,4 @@
-import Game from "../Game/Game";
+import Game, { TITLE_ID } from "../Game/Game";
 import GameObject from "../Game/Object/GameObject";
 import EObjectType from "../Game/Object/Enum/EObjectType";
 import SPRTIE_DEF, { SpriteDef } from "./Sprite/SpriteDefinition";
@@ -8,24 +8,28 @@ import AnimationObject from "../Game/Object/AnimationObject";
 import EAnimationType from "../Game/Object/Enum/EAnimationType";
 import BlockObject from "../Game/Object/BlockObject";
 import ItemObject from "../Game/Object/ItemObject";
-import { getSpriteData } from "./Sprite/SpriteData";
+import { getSpriteData, getSystemSprite, getSpriteSize } from "./Sprite/SpriteData";
 import EDirection from "../Utils/EDirection";
 import { Point, Size } from "../Utils/UnitTypes";
 import { getRandomRange } from "../Utils/Utils";
+import EMenuType from "../Game/Menu/EMenuType";
+import ESystemSprite from "./Sprite/ESystemSprite";
+import EBlockType from "../Game/Object/Enum/EBlockType";
 
 export const MAX_FPS = 60;
+export const MENU_MAX_FPS = 30;
 export const DRAWING_CONST = {
 	colors: {
 		background: "#000000",
-		background_frame: "#949494",
+		background_frame: "#636362",
 
 	},
 	sizes: {
 		frame: {
 			left: 32,
-			top: 24,
-			bottom: 24,
-			right: 32
+			top: 32,
+			bottom: 32,
+			right: SPRTIE_DEF.SYSTEM.FRAME.size.width
 		},
 		screen: {
 			width: 32 * 13,
@@ -43,7 +47,8 @@ export const DRAWING_CONST = {
 export default class Renderer {
 	private _game: Game;
 	private _canvas: HTMLCanvasElement;
-	private _sprite: HTMLImageElement;
+	private _mainSprite: HTMLImageElement;
+	private _titleSprite: HTMLImageElement;
 
 	private _fps = {
 		fpsInterval: 1000 / MAX_FPS,
@@ -52,7 +57,7 @@ export default class Renderer {
 		elapsed: 0
 	};
 	
-	constructor(game: Game, canvas: HTMLCanvasElement, spriteSrc: string) {
+	constructor(game: Game, canvas: HTMLCanvasElement, sprite_main_src: string, sprite_title_src: string) {
 		if (canvas == undefined) {
 			throw 'canvas is null or undefined';
 		}
@@ -64,20 +69,25 @@ export default class Renderer {
 		this._game = game;
 		
 		this.initScreen();
-		this.loadSprite(spriteSrc);
+		this.loadSprite(sprite_main_src, sprite_title_src);
 	}
 
-	private loadSprite(src: string) {
-		this._sprite = new Image();
-		this._sprite.onload = () => {
+	private loadSprite(mainSrc: string, titleSrc: string) {
+		this._mainSprite = new Image();
+		this._titleSprite = new Image();
+		this._mainSprite.onload = () => {
+			this._titleSprite.src = titleSrc;
+		}
+		this._titleSprite.onload = () => {
 			this.render();
 		}
-		this._sprite.src = src;
+		this._mainSprite.src = mainSrc;
 	}
 
 	private initScreen() {
-		this._canvas.width = DRAWING_CONST.sizes.screen.width;
-		this._canvas.height = DRAWING_CONST.sizes.screen.height;
+		const sizes = DRAWING_CONST.sizes;
+		this._canvas.width = sizes.frame.left + sizes.frame.right + sizes.screen.width;
+		this._canvas.height = sizes.frame.top + sizes.frame.bottom + sizes.screen.height;
 	}
 
 	private render() {
@@ -90,39 +100,6 @@ export default class Renderer {
 		if (fps.elapsed > fps.fpsInterval) {
 			fps.then = fps.now - (fps.elapsed % fps.fpsInterval);
 			
-			// process move action
-			// main tank moves
-			const mainTank = this._game.mainTank;
-			if ( mainTank != null && mainTank.visible === true && this.checkKeyStateSync())
-			{
-				mainTank.move();	
-			}
-
-			// other objects
-			let objects = this._game.getObjects();
-			if (objects){
-				objects.forEach(object => {
-					if (object.objectType === EObjectType.BULLET) {
-						(object as BulletObject).move();
-					} else if (object.objectType === EObjectType.ANIMATION) {
-						let animation = object as AnimationObject;
-						if (animation.expireTime < this._fps.now) {
-							animation.expire();
-						}
-						
-						if (animation.animationType === EAnimationType.INVINCIBLE) {
-							let tankSize = getSpriteData(this._game.mainTank).size;
-							animation.animationPoint = {
-								x: mainTank.position.x + tankSize.width / 2,
-								y: mainTank.position.y + tankSize.height / 2
-							};
-						}
-
-						animation.nextSpritePosition();
-					}
-				})
-			}
-
 			// start drawing
 			// get context
 			let ctx = this._canvas.getContext('2d');
@@ -133,12 +110,89 @@ export default class Renderer {
 
 			// draw backgrounds
 			this.drawBackground(ctx);
+			
+			if (this._game.currentMenu === EMenuType.MAIN) {
+				const objects = this._game.getObjects()
+				objects.forEach(object => {
+					if (object.objectType === EObjectType.ANIMATION) {
+						const animation = object as AnimationObject;
+						if (animation.animationType === EAnimationType.TITLE) {
+							if (animation.animationPoint.y >= ctx.canvas.clientHeight / 2) {
+								animation.animationPoint = {
+									x: animation.animationPoint.x,
+									y: animation.animationPoint.y - 2
+								}
+							} else {
+								if (objects.length < 2) {
+									animation.expire(false);
+								}
+							}
+						} else if (animation.animationType === EAnimationType.CURSOR) {
+							animation.animationPoint = {
+								x: animation.animationPoint.x,
+								y: 265 + this._game.cursorIndex * 32 + 16
+							}
+						}
+						animation.nextSpritePosition();
+					}
+				})
+				this.drawObjects(ctx, this._game.getObjects());
+			} else if (this._game.currentMenu === EMenuType.GAME) {
+				// process move action
+				// main tank moves
+				const mainTank = this._game.mainTank;
+				if (this._game.pause == false && mainTank != null && mainTank.visible === true && this.checkKeyStateSync())
+				{
+					mainTank.move();	
+				}
 
-			// draw frame
-			this.drawFrame(ctx);
+				// other objects
+				const objects = this._game.getObjects();
+				if (this._game.pause == false && objects){
+					objects.forEach(object => {
+						if (object.objectType === EObjectType.BULLET) {
+							(object as BulletObject).move();
+						} else if (object.objectType === EObjectType.ANIMATION) {
+							let animation = object as AnimationObject;
+							if (animation.expireTime < this._fps.now) {
+								if (animation.animationType === EAnimationType.PAUSE) {
+									if (this._game.pause == false) {
+										animation.expire();
+									}
+								} else {
+									animation.expire();
+								}
+							}
+							
+							switch(animation.animationType) {
+								case EAnimationType.INVINCIBLE:
+									let tankSize = getSpriteData(this._game.mainTank).size;
+									animation.animationPoint = {
+										x: mainTank.position.x + tankSize.width / 2,
+										y: mainTank.position.y + tankSize.height / 2
+									};
+									break;
+								case EAnimationType.GAMEOVER:
+									if (animation.animationPoint.y >= ctx.canvas.clientHeight / 2 + getSpriteSize(animation).height / 2) {
+										animation.animationPoint = {
+											x: animation.animationPoint.x,
+											y: animation.animationPoint.y - 2
+										}
+									}
+									break;
+							}
 
-			// draw objects
-			this.drawObjects(ctx, this._game.getObjects());
+							animation.nextSpritePosition();
+						}
+					})
+				}
+
+				// draw frame
+				this.drawFrame(ctx);
+
+				// draw objects
+				this.drawObjects(ctx, this._game.getObjects());
+			}
 
 			// draw debug counter
 			if (this._game.debug) {
@@ -166,28 +220,100 @@ export default class Renderer {
 
 		ctx.fillStyle = DRAWING_CONST.colors.background;
 		ctx.fillRect(
-			DRAWING_CONST.sizes.frame.left,
-			DRAWING_CONST.sizes.frame.top,
-			ctx.canvas.width - (DRAWING_CONST.sizes.frame.left + DRAWING_CONST.sizes.frame.right),
-			ctx.canvas.height - (DRAWING_CONST.sizes.frame.top + DRAWING_CONST.sizes.frame.bottom)
+			0,
+			0,
+			ctx.canvas.clientWidth,
+			ctx.canvas.clientHeight
 		);
 		ctx.restore();
 	}
 
 	private drawFrame(ctx: CanvasRenderingContext2D) {
+		const FRAME = DRAWING_CONST.sizes.frame;
+		const SPRITE_FRAME = getSystemSprite(ESystemSprite.FRAME);
+		const SPRITE_TANK_ICON = getSystemSprite(ESystemSprite.TANK_ICON);
+
 		ctx.save();
 
 		ctx.fillStyle = DRAWING_CONST.colors.background_frame;
 		// top
-		ctx.fillRect(0, 0, ctx.canvas.clientWidth, DRAWING_CONST.sizes.frame.top);
+		ctx.fillRect(0, 0, ctx.canvas.clientWidth, FRAME.top);
 		// left
-		ctx.fillRect(0, 0, DRAWING_CONST.sizes.frame.left, ctx.canvas.clientHeight);
+		ctx.fillRect(0, 0, FRAME.left, ctx.canvas.clientHeight);
 		// bottom
-		ctx.fillRect(0, ctx.canvas.clientHeight - DRAWING_CONST.sizes.frame.bottom, ctx.canvas.clientWidth, DRAWING_CONST.sizes.frame.bottom);
+		ctx.fillRect(0, ctx.canvas.clientHeight - FRAME.bottom, ctx.canvas.clientWidth, FRAME.bottom);
 		// right
-		ctx.fillRect(ctx.canvas.clientWidth - DRAWING_CONST.sizes.frame.right, 0, DRAWING_CONST.sizes.frame.right, ctx.canvas.clientHeight);
-		ctx.restore();
+		ctx.fillRect(ctx.canvas.clientWidth - FRAME.right, 0, FRAME.right, ctx.canvas.clientHeight);
 
+		this.drawSprite(
+			ctx,
+			SPRITE_FRAME, 
+			{ x: ctx.canvas.clientWidth - FRAME.right, y: 0 }
+		)
+
+		// enemy tank left
+		let tankCount = this._game.gameData.levelData.tanks.length;
+		for(let i = 0; i < 10; i++) {
+			for(let j = 0; j < 2; j++) {
+				if (tankCount > 0) {
+					this.drawSprite(
+						ctx,
+						SPRITE_TANK_ICON,
+						{
+							x: ctx.canvas.clientWidth - FRAME.right + 16 * (j + 1),
+							y: 48 + 16 * i
+						}
+					);
+				} else {
+					ctx.fillRect(
+						ctx.canvas.clientWidth - FRAME.right + 16 * (j + 1),
+						48 + 16 * i,
+						16,
+						16
+					);
+				}
+				tankCount--;
+			}
+		}
+
+		// P1 life
+		this.drawSprite(
+			ctx,
+			getSystemSprite(ESystemSprite.NUMBER, this._game.gameData.life),
+			{ x: ctx.canvas.clientWidth - FRAME.right + 32, y: 288 }
+		);
+
+		// P2 life
+		this.drawSprite(
+			ctx,
+			getSystemSprite(ESystemSprite.NUMBER, this._game.gameData.life),
+			{ x: ctx.canvas.clientWidth - FRAME.right + 32, y: 336 }
+		);
+
+		const levelId = this._game.gameData.levelData.levelId
+		const levelType = typeof(levelId);
+		if (levelType === 'number') {
+			if (Math.floor(levelId as number / 10) === 0) {
+				ctx.fillRect(ctx.canvas.clientWidth - FRAME.right + 16, 400, 16, 16);
+			} else {
+				this.drawSprite(
+					ctx,
+					getSystemSprite(ESystemSprite.NUMBER, Math.floor(levelId as number / 10)),
+					{ x: ctx.canvas.clientWidth - FRAME.right + 16, y: 400 }
+				);
+			}
+			
+			this.drawSprite(
+				ctx,
+				getSystemSprite(ESystemSprite.NUMBER, levelId as number % 10),
+				{ x: ctx.canvas.clientWidth - FRAME.right + 32, y: 400 }
+			);
+
+		} else if (levelType === 'string') {
+			ctx.fillStyle = DRAWING_CONST.colors.background_frame;
+		}
+
+		ctx.restore();
 	}
 
 	private drawObjects(ctx: CanvasRenderingContext2D, objects: Array<GameObject>) {
@@ -202,10 +328,10 @@ export default class Renderer {
 			if (this._game.debug) {
 				ctx.strokeStyle = '#FF0000';
 				ctx.strokeRect(
-					object.position.x,
-					object.position.y,
-					sprite.size.width,
-					sprite.size.height
+					object.position.x + 1,
+					object.position.y + 1,
+					sprite.size.width - 2,
+					sprite.size.height - 2
 				);
 				// this.drawText(ctx, `${object.id}`, {
 				// 	x: DRAWING_CONST.sizes.frame.left + object.position.x,
@@ -218,9 +344,17 @@ export default class Renderer {
 	}
 
 	private drawObject(ctx: CanvasRenderingContext2D, object: GameObject, sprite: SpriteDef) {
-		if (object.visible === false) {
+		let sprite_src = this._mainSprite;
+		if (object.visible == false) {
 			return;
 		}
+		if (object.objectType === EObjectType.ANIMATION) {
+			const animation = object as AnimationObject;
+			if (animation.animationType === EAnimationType.TITLE) {
+				sprite_src = this._titleSprite;
+			}
+		}
+		
 		if (sprite != null) {
 			if (object.objectType === EObjectType.BLOCK) {
 				let block = object as BlockObject;
@@ -233,7 +367,7 @@ export default class Renderer {
 					for(let j = 0; j < blockState[i].length; j++) {
 						if (blockState[i][j] === true) {
 							ctx.drawImage(
-								this._sprite,
+								sprite_src,
 								sprite.position.x + cellSize.width * j,
 								sprite.position.y + cellSize.height * i,
 								cellSize.width,
@@ -248,7 +382,7 @@ export default class Renderer {
 				}
 			} else {
 				ctx.drawImage(
-					this._sprite,
+					sprite_src,
 					sprite.position.x,
 					sprite.position.y,
 					sprite.size.width,
@@ -297,6 +431,22 @@ export default class Renderer {
 		ctx.restore();
 
 	}
+
+	private drawSprite(ctx: CanvasRenderingContext2D, sprite: SpriteDef, position: Point, size?: Size) {
+		ctx.save()
+		ctx.drawImage(
+			this._mainSprite,
+			sprite.position.x,
+			sprite.position.y,
+			sprite.size.width,
+			sprite.size.height,
+			position.x,
+			position.y,
+			size != undefined ? size.width : sprite.size.width,
+			size != undefined ? size.height : sprite.size.height
+		);
+		ctx.restore();
+	}
 	//#endregion
 
 	//#region public methods
@@ -344,7 +494,7 @@ export default class Renderer {
 	 * 6: System Sprites(Game Over... etc)
 	 * @param object object for calculate
 	 */
-	public getObjectZIndex(object: GameObject): number {
+	public static getObjectZIndex(object: GameObject): number {
 		switch(object.objectType) {
 			case EObjectType.BLOCK:
 				let block = object as BlockObject;

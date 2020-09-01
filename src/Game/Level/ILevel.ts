@@ -1,7 +1,9 @@
-import GameObject from "../Object/GameObject";
+import ITankDefinition from "./ITankDefinition";
+import IBlockDefinition from "./IBlockDefinition";
 
 export default interface ILevel {
-	levelId: string,
+	levelId: string | number,
 	levelName: string,
-	levelObjects: Array<Array<GameObject>>
+	tanks: Array<ITankDefinition>,
+	blocks: Array<IBlockDefinition>
 }

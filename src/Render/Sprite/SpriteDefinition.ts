@@ -353,6 +353,16 @@ const SPRTIE_DEF = {
 				position: { x: 544, y: 64 },
 				size: {width: 32, height: 32}
 			}
+		],
+		EAGLE: [
+			{
+				position: { x: 608, y: 64 },
+				size: {width: 32, height: 32}
+			},
+			{
+				position: { x: 640, y: 64 },
+				size: {width: 32, height: 32}
+			}
 		]
 	},
 	ANIMATION: {
@@ -437,6 +447,28 @@ const SPRTIE_DEF = {
 				position: { x: 706, y: 328 },
 				size: { width: 28, height: 14 }
 			},
+		],
+		GAMEOVER: [
+			{
+				position: { x: 578, y: 368 },
+				size: { width: 62, height: 30 }
+			},
+		],
+		PAUSE: [
+			{
+				position: { x: 578, y: 352 },
+				size: { width: 78, height: 14 }
+			}
+		],
+		TITLE: [
+			{
+				position: { x: 0, y: 0 },
+				size: { width: 512, height: 480 }
+			}
+		],
+		CURSOR: [
+			{ position: { x: 192, y: 0 }, size: { width: 32, height: 32 } },
+			{ position: { x: 224, y: 0 }, size: { width: 32, height: 32 } },
 		]
 
 	},
@@ -470,10 +502,66 @@ const SPRTIE_DEF = {
 			size: { width: 32, height: 30 }
 		},
 	},
-	NULL: {
-		position: { x: 0, y: 0 },
-		size: { width: 0, height: 0 }
-	}
+	SYSTEM: {
+		NULL: {
+			position: { x: 0, y: 0 },
+			size: { width: 0, height: 0 }
+		},
+		TANK_ICON: {
+			position: { x: 640, y: 384 },
+			size: { width: 16, height: 16 }
+		},
+		STAGE: {
+			position: { x: 658, y: 351 },
+			size: { width: 78, height: 16 }
+		},
+		NUMBER: [
+			{	// 0
+				position: { x: 657, y: 367 },
+				size: { width: 16, height: 16 }
+			},
+			{	// 1
+				position: { x: 674, y: 367 },
+				size: { width: 16, height: 16 }
+			},
+			{	// 2
+				position: { x: 689, y: 367 },
+				size: { width: 16, height: 16 }
+			},
+			{	// 3
+				position: { x: 705, y: 367 },
+				size: { width: 16, height: 16 }
+			},
+			{	// 4
+				position: { x: 721, y: 367 },
+				size: { width: 16, height: 16 }
+			},
+			{	// 5
+				position: { x: 657, y: 383 },
+				size: { width: 16, height: 16 }
+			},
+			{	// 6
+				position: { x: 674, y: 383 },
+				size: { width: 16, height: 16 }
+			},
+			{	// 7
+				position: { x: 689, y: 383 },
+				size: { width: 16, height: 16 }
+			},
+			{	// 8
+				position: { x: 705, y: 383 },
+				size: { width: 16, height: 16 }
+			},
+			{	// 9
+				position: { x: 721, y: 383 },
+				size: { width: 16, height: 16 }
+			}
+		],
+		FRAME: {
+			position: { x: 736, y: 0 },
+			size: { width: 64, height: 480 }
+		}
+	},
 }
 
 export default SPRTIE_DEF;

@@ -48,7 +48,7 @@ export default class BulletObject extends MovingObject {
 				if (object.objectType === EObjectType.TANK && (object as TankObject).isInvincible) {
 					exploded = false;
 				}
-				this.fitToObject(object, 0);
+				this.fitToObject(object, -1);
 				object.hit(this);
 			})
 			this.explode(exploded);

@@ -7,7 +7,11 @@ const enum EAnimationType {
 	SCORE_200 = 'SCORE_200',
 	SCORE_300 = 'SCORE_300',
 	SCORE_400 = 'SCORE_400',
-	SCORE_500 = 'SCORE_500'
+	SCORE_500 = 'SCORE_500',
+	GAMEOVER = 'GAMEOVER',
+	PAUSE = 'PAUSE',
+	TITLE = 'TITLE',
+	CURSOR = 'CURSOR'
 }
 
 export interface AnimationValue {
@@ -62,6 +66,26 @@ export const AnimationDefaults = {
 		duration: 1000,
 		frameRate: 0,
 		loop: false
+	},
+	GAMEOVER: {
+		duration: 4000,
+		frameRate: 100,
+		loop: true
+	},
+	PAUSE: {
+		duration: -1,
+		frameRate: 100,
+		loop: true
+	},
+	TITLE: {
+		duration: 4000,
+		frameRate: 100,
+		loop: true
+	},
+	CURSOR: {
+		duration: 50,
+		frameRate: 25,
+		loop: true
 	}
 };
 
