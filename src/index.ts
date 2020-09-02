@@ -28,9 +28,6 @@ debug_btn.addEventListener('click', ev => {
 	debug_btn.innerText = `debug = ${debug_btn.getAttribute('value')}`;
 });
 
-mainTank_color.value = game.mainTank.tankColor.toString();
-mainTank_level.value = game.mainTank.tankLevel.toString();
-
 mainTank_level.addEventListener("change", () => {updateTank()});
 mainTank_color.addEventListener("change", () => {updateTank()});
 mainTank_invincible.addEventListener("click", () => { game.mainTank.invincible(); });
@@ -47,6 +44,10 @@ let objectFinder = setInterval(() => {
 	`;
 	if (!game.debug) {
 		return;
+	}
+	if (game.mainTank) {
+		mainTank_color.value = game.mainTank.tankColor.toString();
+		mainTank_level.value = game.mainTank.tankLevel.toString();
 	}
 	game.getObjects().forEach(object => {
 		objects.innerHTML = objects.innerHTML + 

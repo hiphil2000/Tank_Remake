@@ -1,4 +1,4 @@
-import EKeys from "../Game/InputManage/EKeys";
+import EKeys from "../Game/InputManager/EKeys";
 
 const enum EDirection {
 	up = 'up',

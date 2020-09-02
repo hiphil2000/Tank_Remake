@@ -111,87 +111,15 @@ export default class Renderer {
 			// draw backgrounds
 			this.drawBackground(ctx);
 			
-			if (this._game.currentMenu === EMenuType.MAIN) {
-				const objects = this._game.getObjects()
-				objects.forEach(object => {
-					if (object.objectType === EObjectType.ANIMATION) {
-						const animation = object as AnimationObject;
-						if (animation.animationType === EAnimationType.TITLE) {
-							if (animation.animationPoint.y >= ctx.canvas.clientHeight / 2) {
-								animation.animationPoint = {
-									x: animation.animationPoint.x,
-									y: animation.animationPoint.y - 2
-								}
-							} else {
-								if (objects.length < 2) {
-									animation.expire(false);
-								}
-							}
-						} else if (animation.animationType === EAnimationType.CURSOR) {
-							animation.animationPoint = {
-								x: animation.animationPoint.x,
-								y: 265 + this._game.cursorIndex * 32 + 16
-							}
-						}
-						animation.nextSpritePosition();
-					}
-				})
-				this.drawObjects(ctx, this._game.getObjects());
-			} else if (this._game.currentMenu === EMenuType.GAME) {
-				// process move action
-				// main tank moves
-				const mainTank = this._game.mainTank;
-				if (this._game.pause == false && mainTank != null && mainTank.visible === true && this.checkKeyStateSync())
-				{
-					mainTank.move();	
-				}
-
-				// other objects
-				const objects = this._game.getObjects();
-				if (this._game.pause == false && objects){
-					objects.forEach(object => {
-						if (object.objectType === EObjectType.BULLET) {
-							(object as BulletObject).move();
-						} else if (object.objectType === EObjectType.ANIMATION) {
-							let animation = object as AnimationObject;
-							if (animation.expireTime < this._fps.now) {
-								if (animation.animationType === EAnimationType.PAUSE) {
-									if (this._game.pause == false) {
-										animation.expire();
-									}
-								} else {
-									animation.expire();
-								}
-							}
-							
-							switch(animation.animationType) {
-								case EAnimationType.INVINCIBLE:
-									let tankSize = getSpriteData(this._game.mainTank).size;
-									animation.animationPoint = {
-										x: mainTank.position.x + tankSize.width / 2,
-										y: mainTank.position.y + tankSize.height / 2
-									};
-									break;
-								case EAnimationType.GAMEOVER:
-									if (animation.animationPoint.y >= ctx.canvas.clientHeight / 2 + getSpriteSize(animation).height / 2) {
-										animation.animationPoint = {
-											x: animation.animationPoint.x,
-											y: animation.animationPoint.y - 2
-										}
-									}
-									break;
-							}
-
-							animation.nextSpritePosition();
-						}
-					})
-				}
-
-				// draw frame
-				this.drawFrame(ctx);
-
-				// draw objects
-				this.drawObjects(ctx, this._game.getObjects());
+			switch(this._game.currentMenu) {
+				case EMenuType.MAIN:
+					this.renderMain(ctx);
+					break;
+				case EMenuType.GAME:
+					this.renderGame(ctx);
+					break;
+				case EMenuType.CONSTRUCT:
+					break;
 			}
 
 			// draw debug counter
@@ -199,6 +127,91 @@ export default class Renderer {
 				this.drawDebugCounter(ctx);
 			}
 		}
+	}
+
+	private renderMain(ctx: CanvasRenderingContext2D) {
+		const objects = this._game.getObjects()
+		objects.forEach(object => {
+			if (object.objectType === EObjectType.ANIMATION) {
+				const animation = object as AnimationObject;
+				if (animation.animationType === EAnimationType.TITLE) {
+					if (animation.animationPoint.y >= ctx.canvas.clientHeight / 2) {
+						animation.animationPoint = {
+							x: animation.animationPoint.x,
+							y: animation.animationPoint.y - 2
+						}
+					} else {
+						if (objects.length < 2) {
+							animation.expire(false);
+						}
+					}
+				} else if (animation.animationType === EAnimationType.CURSOR) {
+					animation.animationPoint = {
+						x: animation.animationPoint.x,
+						y: 265 + this._game.cursorIndex * 32 + 16
+					}
+				}
+				animation.nextSpritePosition();
+			}
+		})
+		this.drawObjects(ctx, this._game.getObjects());
+	}
+
+	private renderGame(ctx: CanvasRenderingContext2D) {
+		// process move action
+		// main tank moves
+		const mainTank = this._game.mainTank;
+		if (this._game.pause == false && mainTank != null && mainTank.visible === true && this.checkKeyStateSync())
+		{
+			mainTank.move();	
+		}
+
+		// other objects
+		const objects = this._game.getObjects();
+		if (this._game.pause == false && objects){
+			objects.forEach(object => {
+				if (object.objectType === EObjectType.BULLET) {
+					(object as BulletObject).move();
+				} else if (object.objectType === EObjectType.ANIMATION) {
+					let animation = object as AnimationObject;
+					if (animation.expireTime < this._fps.now) {
+						if (animation.animationType === EAnimationType.PAUSE) {
+							if (this._game.pause == false) {
+								animation.expire();
+							}
+						} else {
+							animation.expire();
+						}
+					}
+					
+					switch(animation.animationType) {
+						case EAnimationType.INVINCIBLE:
+							let tankSize = getSpriteData(this._game.mainTank).size;
+							animation.animationPoint = {
+								x: mainTank.position.x + tankSize.width / 2,
+								y: mainTank.position.y + tankSize.height / 2
+							};
+							break;
+						case EAnimationType.GAMEOVER:
+							if (animation.animationPoint.y >= ctx.canvas.clientHeight / 2 + getSpriteSize(animation).height / 2) {
+								animation.animationPoint = {
+									x: animation.animationPoint.x,
+									y: animation.animationPoint.y - 2
+								}
+							}
+							break;
+					}
+
+					animation.nextSpritePosition();
+				}
+			})
+		}
+
+		// draw frame
+		this.drawFrame(ctx);
+
+		// draw objects
+		this.drawObjects(ctx, this._game.getObjects());
 	}
 
 	private checkKeyStateSync(): boolean {
@@ -252,7 +265,11 @@ export default class Renderer {
 		)
 
 		// enemy tank left
-		let tankCount = this._game.gameData.levelData.tanks.length;
+		const groups = this._game.gameData.levelData.tanks;
+		let tankCount = 0;
+		groups.forEach(group => {
+			tankCount += group.DEFAULT + group.SPEED + group.POWER + group.ARMOURED;
+		});
 		for(let i = 0; i < 10; i++) {
 			for(let j = 0; j < 2; j++) {
 				if (tankCount > 0) {
@@ -279,16 +296,20 @@ export default class Renderer {
 		// P1 life
 		this.drawSprite(
 			ctx,
-			getSystemSprite(ESystemSprite.NUMBER, this._game.gameData.life),
+			getSystemSprite(ESystemSprite.NUMBER, this._game.gameData.playerData[0].life),
 			{ x: ctx.canvas.clientWidth - FRAME.right + 32, y: 288 }
 		);
 
 		// P2 life
-		this.drawSprite(
-			ctx,
-			getSystemSprite(ESystemSprite.NUMBER, this._game.gameData.life),
-			{ x: ctx.canvas.clientWidth - FRAME.right + 32, y: 336 }
-		);
+		if (this._game.gameData.playerData.length > 1) {
+			this.drawSprite(
+				ctx,
+				getSystemSprite(ESystemSprite.NUMBER, this._game.gameData.playerData[1].life),
+				{ x: ctx.canvas.clientWidth - FRAME.right + 32, y: 336 }
+			);
+		} else {
+			ctx.fillRect(ctx.canvas.clientWidth - FRAME.right + 16, 320, 32, 32);
+		}
 
 		const levelId = this._game.gameData.levelData.levelId
 		const levelType = typeof(levelId);

@@ -14,6 +14,21 @@ const enum EAnimationType {
 	CURSOR = 'CURSOR'
 }
 
+export function ScoreToAnimation(score: number): EAnimationType {
+	switch(Math.floor(score / 100)) {
+		case 1:
+			return EAnimationType.SCORE_100;
+		case 2:
+			return EAnimationType.SCORE_200;
+		case 3:
+			return EAnimationType.SCORE_300;
+		case 4:
+			return EAnimationType.SCORE_400;
+		case 5:
+			return EAnimationType.SCORE_500;
+	}
+}
+
 export interface AnimationValue {
 	duration: number,
 	frameRate: number,

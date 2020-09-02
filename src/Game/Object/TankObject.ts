@@ -1,5 +1,5 @@
 import { Point } from "../../Utils/UnitTypes";
-import Game from "../Game";
+import Game, { MAIN_TANK_ID } from "../Game";
 import EObjectType from "./Enum/EObjectType";
 import MovingObject, { calculateMove } from "./MovingObject";
 import EDirection from "../../Utils/EDirection";
@@ -7,7 +7,7 @@ import BulletObject, { BULLET_SLOW, BULLET_FAST } from "./BulletObject";
 import SPRTIE_DEF, { SpriteDef } from "../../Render/Sprite/SpriteDefinition";
 import { Guid } from "../../Utils/Utils";
 import EAnimationType from "./Enum/EAnimationType";
-import ETankType from "./Enum/ETankType";
+import ETankType, { EnemyType } from "./Enum/ETankType";
 
 export const TANK_SPEED = 2;
 export const TANK_FIRE_DELAY = 100;
@@ -30,12 +30,8 @@ export default class TankObject extends MovingObject {
 		this._bullets = [];
 		this.visible = false;
 		this._lastFired = 0;
-		this._game.startAnimation(this, EAnimationType.SPAWN, null, animation => {
-			this.visible = true;
-			if (this == this._game.mainTank) {
-				this.invincible();
-			}
-		})
+
+		this.spawn();
 	}
 	//#endregion
 
@@ -95,12 +91,7 @@ export default class TankObject extends MovingObject {
 		if (this._isInvincible) {
 			return;
 		}
-		this._game.startAnimation(this, EAnimationType.EXPLOSION_SMALL, null, (animation) => {
-			this._game.startAnimation(animation.animationPoint, EAnimationType.EXPLOSION_LARGE, null, () => {
-				this.remove();
-				this._game.spawnTank(ETankType.PLAYER_TANK);
-			});
-		})
+		this.destroy();
 	}
 	//#endregion
 	
@@ -113,10 +104,32 @@ export default class TankObject extends MovingObject {
 		}
 	}
 
+	public spawn() {
+		this._game.startAnimation(this, EAnimationType.SPAWN, null, () => {
+			this.visible = true;
+			if (this == this._game.mainTank) {
+				this.invincible();
+			}
+		})
+	}
+
 	public invincible() {
 		this._isInvincible = true;
 		this._game.startAnimation(this, EAnimationType.INVINCIBLE, null, (anim) => {
 			this._isInvincible = false;
+		})
+	}
+
+	public destroy() {
+		this._game.startAnimation(this, EAnimationType.EXPLOSION_SMALL, null, (animation) => {
+			this._game.startAnimation(animation.animationPoint, EAnimationType.EXPLOSION_LARGE, null, () => {
+				this.remove();
+				if (this.id === MAIN_TANK_ID) {
+					this._game.spawnTank(this.tankType, false, 0);
+				} else {
+					this._game.spawnTank(this.tankType, false, 1);
+				}
+			});
 		})
 	}
 

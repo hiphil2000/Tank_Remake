@@ -98,7 +98,6 @@ export default abstract class MovingObject extends GameObject {
 					break;
 			}
 		}
-
 	}
 }
 

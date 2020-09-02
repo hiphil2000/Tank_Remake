@@ -1,11 +1,6 @@
 import ILevel from "./ILevel";
 import EBlockType from "../Object/Enum/EBlockType";
-import EDirection from "../../Utils/EDirection";
 import { EnemyType } from "../Object/Enum/ETankType";
-
-interface LevelDefinition {
-	[key: number]: ILevel
-}
 
 const BLOCK_FULL = {
 	bottomLeft: true,
@@ -40,8 +35,8 @@ const BLOCK_HALF_VR = {
 	topRight: true
 }
 
-const DefaultLevels: LevelDefinition = {
-	1: {
+const DefaultLevels: Array<ILevel> = [
+	{
 		levelId: 1,
 		levelName: 'LEVEL 1',
 		blocks: [
@@ -438,19 +433,19 @@ const DefaultLevels: LevelDefinition = {
 		],
 		tanks: [
 			{
-				type: EnemyType.DEFAULT,
+				ARMOURED: 0,
+				DEFAULT: 18,
+				SPEED: 0,
+				POWER: 0
 			},
 			{
-				type: EnemyType.DEFAULT,
-			},
-			{
-				type: EnemyType.DEFAULT,
-			},
-			{
-				type: EnemyType.DEFAULT,
-			},
+				ARMOURED: 0,
+				DEFAULT: 0,
+				SPEED: 2,
+				POWER: 0
+			}
 		]
 	}
-}
+]
 
 export default DefaultLevels;
