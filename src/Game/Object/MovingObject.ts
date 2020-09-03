@@ -5,7 +5,7 @@ import { Point } from "../../Utils/UnitTypes";
 import EDirection from "../../Utils/EDirection";
 import { DRAWING_CONST } from "../../Render/Renderer";
 import BlockObject from "./BlockObject";
-import { getSpriteSize } from "../../Render/Sprite/SpriteData";
+import { getSpriteSize, getObjectSize } from "../../Render/Sprite/SpriteData";
 import { BlockCollisionTest } from "../../Utils/CollisionTest";
 import { max, min } from "../../Utils/Utils";
 
@@ -57,29 +57,68 @@ export default abstract class MovingObject extends GameObject {
 
 	protected fitToObject(object: GameObject, gap: number = 0) {
 		const size = getSpriteSize(this);
+		const tankSize = getObjectSize(this.objectType);
 		const objectSize = getSpriteSize(object);
 
 		if (object.objectType === EObjectType.BLOCK) {
 			const block = object as BlockObject;
+			const cellSize = {
+				width: objectSize.width / 4,
+				height: objectSize.height / 4
+			};
+			const adjustGap = cellSize.width * .8;
+
 			const collision_cells = BlockCollisionTest(block, this);
 			const xPos = collision_cells.map(point => { return point.x; });
 			const yPos = collision_cells.map(point => { return point.y; });
 			switch(this.direction) {
 				case EDirection.left:
-					if (xPos.length > 0)
+					if (xPos.length > 0) {
+						if (yPos.length > 0) {
+							if (this.position.y + tankSize.height - min(yPos) <= adjustGap) {
+								this.position.y = min(yPos) - tankSize.height;
+							} else if (max(yPos) + cellSize.height - this.position.y <= adjustGap) {
+								this.position.y = max(yPos) + cellSize.height;
+							}
+						}
 						this.position.x = max(xPos) + objectSize.width / 4 + gap;
+					}
 					break;
 				case EDirection.up:
-					if (yPos.length > 0)
-						this.position.y = max(yPos) + objectSize.height / 4 + gap;
+					if (yPos.length > 0) {
+						if (xPos.length > 0) {
+							if (this.position.x + tankSize.width - min(xPos) <= adjustGap) {
+								this.position.x = object.position.x - tankSize.width;
+							} else if (max(xPos) + cellSize.width - this.position.x <= adjustGap) {
+								this.position.x = max(xPos) + cellSize.width;
+							}
+						}
+						this.position.y = max(yPos) + cellSize.height + gap;
+					}
 					break;
 				case EDirection.down:
-					if (yPos.length > 0)
+					if (yPos.length > 0) {
+						if (xPos.length > 0) {
+							if (this.position.x + tankSize.width - min(xPos) <= adjustGap) {
+								this.position.x = min(xPos) - tankSize.width;
+							} else if (max(xPos) + cellSize.width - this.position.x <= adjustGap) {
+								this.position.x = max(xPos) + cellSize.width;
+							}
+						}
 						this.position.y = min(yPos) - size.height - gap;
+					}
 					break;
 				case EDirection.right:
-					if (xPos.length > 0)
+					if (xPos.length > 0) {
+						if (yPos.length > 0) {
+							if (this.position.y + tankSize.height - min(yPos) <= adjustGap) {
+								this.position.y = min(yPos) - tankSize.height;
+							} else if (max(yPos) + cellSize.height - this.position.y <= adjustGap) {
+								this.position.y = max(yPos) + cellSize.height;
+							}
+						}
 						this.position.x = min(xPos) - size.width - gap;
+					}
 					break;
 			}
 		} else {

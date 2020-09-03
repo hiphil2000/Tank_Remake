@@ -13,17 +13,32 @@ import { Point } from "../Utils/UnitTypes";
 import AnimationObject from "./Object/AnimationObject";
 import EAnimationType, { AnimationValue, AnimationDefaults } from "./Object/Enum/EAnimationType";
 import BlockObject from "./Object/BlockObject";
-import ETankType from "./Object/Enum/ETankType";
-import { getSpriteData, getSpriteSize } from "../Render/Sprite/SpriteData";
+import ETankType, { EnemyType } from "./Object/Enum/ETankType";
+import { getSpriteData, getObjectSize } from "../Render/Sprite/SpriteData";
 import EMenuType from "./Menu/EMenuType";
 import EBlockType from "./Object/Enum/EBlockType";
 import DefaultLevels from "./Level/DefaultLevels";
 import InputManager from "./InputManager/InputManager";
 import IKeyState from "./InputManager/IKeyState";
+import { getRandomRange } from "../Utils/Utils";
+import TankAIOBject from "./Object/TankAIObject";
+import ITankDefinition from "./Level/ITankDefinition";
 
 
 export const MAIN_TANK_ID = 'MAIN';
-export const TITLE_ID = 'TITLE';
+export const MAXIMUM_TANKS = 4;
+export const TANK_SPAWN_DELAY = 2500;
+export const TANK_SPAWN_POINT = {
+	PLAYER_TANK: [
+		{ x: 4, y: 12 },
+		{ x: 8, y: 12 }
+	],
+	ENEMY_TANK: [
+		{ x: 0, y: 0 },
+		{ x: 6, y: 0 },
+		{ x: 12, y: 0 }
+	]
+};
 
 export default class Game {
 	public debug: boolean;
@@ -34,10 +49,12 @@ export default class Game {
 	private _objects: Array<GameObject>;
 
 	private _currentMenu: EMenuType;
+	private _lastSpawn: number;
 
 	constructor(screen: HTMLCanvasElement, sprite_main_src: string, sprite_title_src: string, debug?: boolean) {
 		this.debug = debug;
 		this._objects = [];
+		this._lastSpawn = performance.now();
 		this._pause = false;
 		this._renderer = new Renderer(this, screen, sprite_main_src, sprite_title_src);
 		this._inputManager = new InputManager(this);
@@ -53,6 +70,10 @@ export default class Game {
 		} else {
 			return null;
 		}
+	}
+
+	get objects(): Array<GameObject> {
+		return this._objects;
 	}
 
 	get pause(): boolean {
@@ -116,10 +137,6 @@ export default class Game {
 
 			return zindex1 - zindex2;
 		});
-	}
-
-	public getObjects(): Array<GameObject> {
-		return this._objects;
 	}
 
 	public findObjectById(id: string): Array<GameObject> {
@@ -303,6 +320,7 @@ export default class Game {
 	public showTitle() {
 		this._currentMenu = EMenuType.MAIN;
 		this._objects = [];
+		this._renderer.titleShown = false;
 		this._inputManager.initialize();
 		const FRAME = DRAWING_CONST.sizes.frame;
 		const SCREEN = DRAWING_CONST.sizes.screen;
@@ -338,11 +356,12 @@ export default class Game {
 			} else {
 				tankColor = ETankColor.GREEN;
 			}
+
+			const position = TANK_SPAWN_POINT[tankType][playerIndex];
 			this.createPlayerTank(
-				// this._renderer.randomPoint({width: 32, height: 32}),
 				{
-					x: DRAWING_CONST.sizes.frame.left + 4 * 32,
-					y: DRAWING_CONST.sizes.frame.top + 12 * 32
+					x: DRAWING_CONST.sizes.frame.left + position.x * getObjectSize(EObjectType.TANK).width,
+					y: DRAWING_CONST.sizes.frame.top + position.y * getObjectSize(EObjectType.TANK).height,
 				},
 				EDirection.up,
 				tankColor,
@@ -352,10 +371,20 @@ export default class Game {
 				this._gameData.playerData[playerIndex].life--;
 			}
 		} else if (tankType === ETankType.ENEMY_TANK) {
-			this.createEnemyTank(
-				this._renderer.randomPoint({width: 32, height: 32}),
-				EDirection.up
-			)
+			const now = performance.now();
+			if (now - this._lastSpawn > TANK_SPAWN_DELAY) {
+				this._lastSpawn = now;
+				const tanks = this._objects.filter(x => {
+					return x.objectType === EObjectType.TANK && (x as TankObject).tankType === ETankType.ENEMY_TANK
+				});
+				if (tanks.length >= MAXIMUM_TANKS) {
+					return;
+				}
+				this.createEnemyTank({
+					type: EnemyType.DEFAULT,
+					item: true
+				});
+			}
 		}
 	}
 
@@ -375,7 +404,22 @@ export default class Game {
 		));
 	}
 
-	private createEnemyTank(position: Point, direction: EDirection) {
+	private createEnemyTank(tankDefinition: ITankDefinition) {
+		const tankSize = getObjectSize(EObjectType.TANK);
+		const spawnPoints = TANK_SPAWN_POINT.ENEMY_TANK;
+		
+		const idx = getRandomRange(0, 2);
+		const position = {
+			x: DRAWING_CONST.sizes.frame.left + spawnPoints[idx].x * tankSize.width,
+			y: DRAWING_CONST.sizes.frame.top + spawnPoints[idx].y * tankSize.height
+		};
+		this.insertObject(new TankAIOBject(
+			this,
+			tankDefinition.type,
+			tankDefinition.item ? tankDefinition.item : false,
+			position,
+			EDirection.down
+		));
 
 	}
 	//#endregion

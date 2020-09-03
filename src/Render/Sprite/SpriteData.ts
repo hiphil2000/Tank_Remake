@@ -8,6 +8,9 @@ import BlockObject from "../../Game/Object/BlockObject";
 import ItemObject from "../../Game/Object/ItemObject";
 import { Size } from "../../Utils/UnitTypes";
 import ESystemSprite from "./ESystemSprite";
+import EDirection from "../../Utils/EDirection";
+import EAnimationType from "../../Game/Object/Enum/EAnimationType";
+import TankAIOBject from "../../Game/Object/TankAIObject";
 
 /**
  * Find sprite data for given object
@@ -17,7 +20,11 @@ export function getSpriteData(object: GameObject): SpriteDef {
 	switch (object.objectType) {
 		case EObjectType.TANK:
 			let tank = object as TankObject;
-			return SPRTIE_DEF.TANK[tank.tankColor][tank.tankLevel][tank.direction][tank.spritePosition];
+			if (tank instanceof TankAIOBject) {
+				return SPRTIE_DEF.ENEMY[tank.tankColor][tank.tankLevel][tank.direction][tank.spritePosition];
+			} else {
+				return SPRTIE_DEF.TANK[tank.tankColor][tank.tankLevel][tank.direction][tank.spritePosition];
+			}
 		case EObjectType.BULLET:
 			let bullet = object as BulletObject;
 			return SPRTIE_DEF.BULLET[bullet.direction];
@@ -47,4 +54,24 @@ export function getSystemSprite(spriteType: ESystemSprite, number: number = 0) {
 
 export function getSpriteSize(object: GameObject): Size {
 	return getSpriteData(object).size;
+}
+
+export function getObjectSize(type: EObjectType, direction?: EDirection): Size {
+	if (direction == null) {
+		direction = EDirection.up;
+	}
+	switch(type) {
+		case EObjectType.BLOCK:
+			return SPRTIE_DEF.BLOCK.BRICK[0].size;
+		case EObjectType.TANK:
+			return SPRTIE_DEF.TANK.YELLOW[0][direction][0].size;
+		case EObjectType.BULLET:
+			return SPRTIE_DEF.BULLET[direction].size;
+		case EObjectType.ITEM:
+			return SPRTIE_DEF.ITEM.BOMB.size;
+	}
+}
+
+export function getAnimationSize(type: EAnimationType, frame: number): Size {
+	return SPRTIE_DEF.ANIMATION[type][frame].size;
 }

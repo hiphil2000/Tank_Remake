@@ -17,7 +17,7 @@ export default class ItemObject extends GameObject {
 
 	hit(eventOrigin: GameObject): void {
 		let mainTank = this._game.mainTank;
-		let otherTanks = this._game.getObjects().filter(x => {
+		let otherTanks = this._game.objects.filter(x => {
 			return x.objectType === EObjectType.TANK && x != mainTank;
 		}) as Array<TankObject>;
 		switch(this.itemType) {

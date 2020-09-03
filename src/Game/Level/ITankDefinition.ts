@@ -4,5 +4,5 @@ import { EnemyType } from "../Object/Enum/ETankType";
 
 export default interface ITankDefinition {
 	type: EnemyType,
-	item?: EItemType,
+	item?: boolean,
 }

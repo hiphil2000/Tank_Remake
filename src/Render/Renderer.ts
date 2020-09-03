@@ -1,4 +1,4 @@
-import Game, { TITLE_ID } from "../Game/Game";
+import Game from "../Game/Game";
 import GameObject from "../Game/Object/GameObject";
 import EObjectType from "../Game/Object/Enum/EObjectType";
 import SPRTIE_DEF, { SpriteDef } from "./Sprite/SpriteDefinition";
@@ -8,13 +8,14 @@ import AnimationObject from "../Game/Object/AnimationObject";
 import EAnimationType from "../Game/Object/Enum/EAnimationType";
 import BlockObject from "../Game/Object/BlockObject";
 import ItemObject from "../Game/Object/ItemObject";
-import { getSpriteData, getSystemSprite, getSpriteSize } from "./Sprite/SpriteData";
+import { getSpriteData, getSystemSprite, getSpriteSize, getObjectSize, getAnimationSize } from "./Sprite/SpriteData";
 import EDirection from "../Utils/EDirection";
 import { Point, Size } from "../Utils/UnitTypes";
 import { getRandomRange } from "../Utils/Utils";
 import EMenuType from "../Game/Menu/EMenuType";
 import ESystemSprite from "./Sprite/ESystemSprite";
 import EBlockType from "../Game/Object/Enum/EBlockType";
+import ETankType from "../Game/Object/Enum/ETankType";
 
 export const MAX_FPS = 60;
 export const MENU_MAX_FPS = 30;
@@ -36,6 +37,11 @@ export const DRAWING_CONST = {
 			height: 32 * 13
 		}
 	},
+	positions: {
+		main: {
+			cursor_start: 265
+		}
+	},
 	debug: {
 		font: {
 			size: 12,
@@ -45,6 +51,8 @@ export const DRAWING_CONST = {
 }
 
 export default class Renderer {
+	public titleShown: boolean;
+
 	private _game: Game;
 	private _canvas: HTMLCanvasElement;
 	private _mainSprite: HTMLImageElement;
@@ -129,89 +137,119 @@ export default class Renderer {
 		}
 	}
 
+	/**
+	 * render main screen
+	 * @param ctx context
+	 */
 	private renderMain(ctx: CanvasRenderingContext2D) {
-		const objects = this._game.getObjects()
-		objects.forEach(object => {
-			if (object.objectType === EObjectType.ANIMATION) {
-				const animation = object as AnimationObject;
-				if (animation.animationType === EAnimationType.TITLE) {
-					if (animation.animationPoint.y >= ctx.canvas.clientHeight / 2) {
-						animation.animationPoint = {
-							x: animation.animationPoint.x,
-							y: animation.animationPoint.y - 2
-						}
-					} else {
-						if (objects.length < 2) {
-							animation.expire(false);
-						}
-					}
-				} else if (animation.animationType === EAnimationType.CURSOR) {
-					animation.animationPoint = {
-						x: animation.animationPoint.x,
-						y: 265 + this._game.cursorIndex * 32 + 16
-					}
-				}
-				animation.nextSpritePosition();
-			}
-		})
-		this.drawObjects(ctx, this._game.getObjects());
+		this.processMain();
+		this.drawObjects(ctx, this._game.objects);
 	}
 
-	private renderGame(ctx: CanvasRenderingContext2D) {
-		// process move action
-		// main tank moves
-		const mainTank = this._game.mainTank;
-		if (this._game.pause == false && mainTank != null && mainTank.visible === true && this.checkKeyStateSync())
-		{
-			mainTank.move();	
-		}
-
-		// other objects
-		const objects = this._game.getObjects();
-		if (this._game.pause == false && objects){
+	/**
+	 * process main screen actions
+	 */
+	private processMain() {
+		const objects = this._game.objects;
+		if (objects != undefined) {
 			objects.forEach(object => {
-				if (object.objectType === EObjectType.BULLET) {
-					(object as BulletObject).move();
-				} else if (object.objectType === EObjectType.ANIMATION) {
-					let animation = object as AnimationObject;
-					if (animation.expireTime < this._fps.now) {
-						if (animation.animationType === EAnimationType.PAUSE) {
-							if (this._game.pause == false) {
-								animation.expire();
-							}
-						} else {
-							animation.expire();
-						}
-					}
-					
-					switch(animation.animationType) {
-						case EAnimationType.INVINCIBLE:
-							let tankSize = getSpriteData(this._game.mainTank).size;
-							animation.animationPoint = {
-								x: mainTank.position.x + tankSize.width / 2,
-								y: mainTank.position.y + tankSize.height / 2
-							};
-							break;
-						case EAnimationType.GAMEOVER:
-							if (animation.animationPoint.y >= ctx.canvas.clientHeight / 2 + getSpriteSize(animation).height / 2) {
-								animation.animationPoint = {
-									x: animation.animationPoint.x,
-									y: animation.animationPoint.y - 2
+				const position = object.position;
+				switch(object.objectType) {
+					case EObjectType.ANIMATION:
+						const animation = object as AnimationObject;
+						const animationPoint = animation.animationPoint;
+						const animationSize = getAnimationSize(animation.animationType, animation.spritePosition);
+						switch(animation.animationType) {
+							case EAnimationType.TITLE:
+								if (position.y > 0) {
+									position.y = position.y - 2;
+									animationPoint.y = position.y + animationSize.height / 2;
+								} else if (this.titleShown === false) {
+									position.y = 0;
+									animationPoint.y = position.y + animationSize.height / 2;
+									animation.expire(false);
+									this.titleShown = true;
 								}
-							}
-							break;
-					}
-
-					animation.nextSpritePosition();
+								break;
+							case EAnimationType.CURSOR:
+								const cursorIndex = this._game.cursorIndex;
+								const cursorStart = DRAWING_CONST.positions.main.cursor_start;
+								animationPoint.y = cursorStart + 
+									cursorIndex * animationSize.height +
+									animationSize.height / 2
+								break;
+						}
+						animation.nextSpritePosition();
+						break;
 				}
-			})
+			});
 		}
+	}
+
+	/**
+	 * render game screen
+	 * @param ctx context
+	 */
+	private renderGame(ctx: CanvasRenderingContext2D) {
+		// process actions
+		this.processGame();
 
 		// draw frame
 		this.drawFrame(ctx);
 
 		// draw objects
-		this.drawObjects(ctx, this._game.getObjects());
+		this.drawObjects(ctx, this._game.objects);
+	}
+
+	/**
+	 * process all game actions
+	 */
+	private processGame() {
+		if (this._game.pause == true) {
+			return;
+		}
+
+		const mainTank = this._game.mainTank;
+		if (mainTank != null) {
+			if (mainTank.visible === true && this.checkKeyStateSync()) {
+				mainTank.move();
+			}
+		}
+
+		const objects = this._game.objects;
+		if (objects != undefined) {
+			objects.forEach(object => {
+				switch(object.objectType) {
+					case EObjectType.BULLET:
+						(object as BulletObject).move();
+						break;
+					case EObjectType.ANIMATION:
+						let animation = object as AnimationObject;
+						if (animation.expireTime < this._fps.now) {
+							animation.expire();
+						}
+
+						const animationPoint = animation.animationPoint;
+						const animationSize = getAnimationSize(animation.animationType, animation.spritePosition);
+						switch(animation.animationType) {
+							case EAnimationType.INVINCIBLE:
+								const tankSize = getObjectSize(EObjectType.TANK);
+								animationPoint.x = mainTank.position.x + tankSize.width / 2;
+								animationPoint.y = mainTank.position.y + tankSize.height / 2;
+								break;
+							case EAnimationType.GAMEOVER:
+								if (animationPoint.y >= this._canvas.clientHeight / 2 + animationSize.height / 2) {
+									animationPoint.y = animationPoint.y - 2;
+								}
+								break;
+						}
+						animation.nextSpritePosition();
+						break;
+				}
+			})
+		}
+
+		this._game.spawnTank(ETankType.ENEMY_TANK);
 	}
 
 	private checkKeyStateSync(): boolean {

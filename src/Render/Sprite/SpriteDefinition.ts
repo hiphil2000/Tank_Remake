@@ -317,7 +317,305 @@ const SPRTIE_DEF = {
 					{ position: { x: 480, y: 352 }, size: { width: 32, height: 32 } },
 				]
 			}
-		]
+		],
+	},
+	ENEMY: {
+		YELLOW: [
+			{	// enemy_yellow_0
+				up: [
+					{ position: { x: 0, y: 128 }, size: { width: 32, height: 32 } },
+					{ position: { x: 32, y: 128 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 64, y: 128 }, size: { width: 32, height: 32 } },
+					{ position: { x: 96, y: 128 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 128, y: 128 }, size: { width: 32, height: 32 } },
+					{ position: { x: 160, y: 128 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 192, y: 128 }, size: { width: 32, height: 32 } },
+					{ position: { x: 224, y: 128 }, size: { width: 32, height: 32 } },
+				]
+			},
+			{	// enemy_yellow_1
+				up: [
+					{ position: { x: 0, y: 160 }, size: { width: 32, height: 32 } },
+					{ position: { x: 32, y: 160 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 64, y: 160 }, size: { width: 32, height: 32 } },
+					{ position: { x: 96, y: 160 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 128, y: 160 }, size: { width: 32, height: 32 } },
+					{ position: { x: 160, y: 160 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 192, y: 160 }, size: { width: 32, height: 32 } },
+					{ position: { x: 224, y: 160 }, size: { width: 32, height: 32 } },
+				]
+			},
+			{	// enemy_yellow_2
+				up: [
+					{ position: { x: 0, y: 192 }, size: { width: 32, height: 32 } },
+					{ position: { x: 32, y: 192 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 64, y: 192 }, size: { width: 32, height: 32 } },
+					{ position: { x: 96, y: 192 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 128, y: 192 }, size: { width: 32, height: 32 } },
+					{ position: { x: 160, y: 192 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 192, y: 192 }, size: { width: 32, height: 32 } },
+					{ position: { x: 224, y: 192 }, size: { width: 32, height: 32 } },
+				]
+			},
+			{	// enemy_yellow_3
+				up: [
+					{ position: { x: 0, y: 224 }, size: { width: 32, height: 32 } },
+					{ position: { x: 32, y: 224 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 64, y: 224 }, size: { width: 32, height: 32 } },
+					{ position: { x: 96, y: 224 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 128, y: 224 }, size: { width: 32, height: 32 } },
+					{ position: { x: 160, y: 224 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 192, y: 224 }, size: { width: 32, height: 32 } },
+					{ position: { x: 224, y: 224 }, size: { width: 32, height: 32 } },
+				]
+			}
+		],
+		GREEN: [
+			{	// tank_green_0
+				up: [
+					{ position: { x: 0, y: 384 }, size: { width: 32, height: 32 } },
+					{ position: { x: 32, y: 384 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 64, y: 384 }, size: { width: 32, height: 32 } },
+					{ position: { x: 96, y: 384 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 128, y: 384 }, size: { width: 32, height: 32 } },
+					{ position: { x: 160, y: 384 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 192, y: 384 }, size: { width: 32, height: 32 } },
+					{ position: { x: 224, y: 384 }, size: { width: 32, height: 32 } },
+				]
+			},
+			{	// tank_green_1
+				up: [
+					{ position: { x: 0, y: 416 }, size: { width: 32, height: 32 } },
+					{ position: { x: 32, y: 416 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 64, y: 416 }, size: { width: 32, height: 32 } },
+					{ position: { x: 96, y: 416 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 128, y: 416 }, size: { width: 32, height: 32 } },
+					{ position: { x: 160, y: 416 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 192, y: 416 }, size: { width: 32, height: 32 } },
+					{ position: { x: 224, y: 416 }, size: { width: 32, height: 32 } },
+				]
+			},
+			{	// tank_green_2
+				up: [
+					{ position: { x: 0, y: 448 }, size: { width: 32, height: 32 } },
+					{ position: { x: 32, y: 448 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 64, y: 448 }, size: { width: 32, height: 32 } },
+					{ position: { x: 96, y: 448 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 128, y: 448 }, size: { width: 32, height: 32 } },
+					{ position: { x: 160, y: 448 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 192, y: 448 }, size: { width: 32, height: 32 } },
+					{ position: { x: 224, y: 448 }, size: { width: 32, height: 32 } },
+				]
+			},
+			{	// tank_green_3
+				up: [
+					{ position: { x: 0, y: 480 }, size: { width: 32, height: 32 } },
+					{ position: { x: 32, y: 480 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 64, y: 480 }, size: { width: 32, height: 32 } },
+					{ position: { x: 96, y: 480 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 128, y: 480 }, size: { width: 32, height: 32 } },
+					{ position: { x: 160, y: 480 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 192, y: 480 }, size: { width: 32, height: 32 } },
+					{ position: { x: 224, y: 480 }, size: { width: 32, height: 32 } },
+				]
+			}
+		],
+		WHITE: [
+			{	// tank_white_0
+				up: [
+					{ position: { x: 256, y: 128 }, size: { width: 32, height: 32 } },
+					{ position: { x: 288, y: 128 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 320, y: 128 }, size: { width: 32, height: 32 } },
+					{ position: { x: 352, y: 128 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 384, y: 128 }, size: { width: 32, height: 32 } },
+					{ position: { x: 416, y: 128 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 448, y: 128 }, size: { width: 32, height: 32 } },
+					{ position: { x: 480, y: 128 }, size: { width: 32, height: 32 } },
+				]
+			},
+			{	// tank_white_1
+				up: [
+					{ position: { x: 256, y: 160 }, size: { width: 32, height: 32 } },
+					{ position: { x: 288, y: 160 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 320, y: 160 }, size: { width: 32, height: 32 } },
+					{ position: { x: 352, y: 160 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 384, y: 160 }, size: { width: 32, height: 32 } },
+					{ position: { x: 416, y: 160 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 448, y: 160 }, size: { width: 32, height: 32 } },
+					{ position: { x: 480, y: 160 }, size: { width: 32, height: 32 } },
+				]
+			},
+			{	// tank_white_2
+				up: [
+					{ position: { x: 256, y: 192 }, size: { width: 32, height: 32 } },
+					{ position: { x: 288, y: 192 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 320, y: 192 }, size: { width: 32, height: 32 } },
+					{ position: { x: 352, y: 192 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 384, y: 192 }, size: { width: 32, height: 32 } },
+					{ position: { x: 416, y: 192 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 448, y: 192 }, size: { width: 32, height: 32 } },
+					{ position: { x: 480, y: 192 }, size: { width: 32, height: 32 } },
+				]
+			},
+			{	// tank_white_3
+				up: [
+					{ position: { x: 256, y: 224 }, size: { width: 32, height: 32 } },
+					{ position: { x: 288, y: 224 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 320, y: 224 }, size: { width: 32, height: 32 } },
+					{ position: { x: 352, y: 224 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 384, y: 224 }, size: { width: 32, height: 32 } },
+					{ position: { x: 416, y: 224 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 448, y: 224 }, size: { width: 32, height: 32 } },
+					{ position: { x: 480, y: 224 }, size: { width: 32, height: 32 } },
+				]
+			}
+		],
+		MAGENTA: [
+			{	// tank_magenta_0
+				up: [
+					{ position: { x: 256, y: 384 }, size: { width: 32, height: 32 } },
+					{ position: { x: 288, y: 384 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 320, y: 384 }, size: { width: 32, height: 32 } },
+					{ position: { x: 352, y: 384 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 384, y: 384 }, size: { width: 32, height: 32 } },
+					{ position: { x: 416, y: 384 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 448, y: 384 }, size: { width: 32, height: 32 } },
+					{ position: { x: 480, y: 384 }, size: { width: 32, height: 32 } },
+				]
+			},
+			{	// tank_magenta_1
+				up: [
+					{ position: { x: 256, y: 416 }, size: { width: 32, height: 32 } },
+					{ position: { x: 288, y: 416 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 320, y: 416 }, size: { width: 32, height: 32 } },
+					{ position: { x: 352, y: 416 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 384, y: 416 }, size: { width: 32, height: 32 } },
+					{ position: { x: 416, y: 416 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 448, y: 416 }, size: { width: 32, height: 32 } },
+					{ position: { x: 480, y: 416 }, size: { width: 32, height: 32 } },
+				]
+			},
+			{	// tank_magenta_2
+				up: [
+					{ position: { x: 256, y: 448 }, size: { width: 32, height: 32 } },
+					{ position: { x: 288, y: 448 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 320, y: 448 }, size: { width: 32, height: 32 } },
+					{ position: { x: 352, y: 448 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 384, y: 448 }, size: { width: 32, height: 32 } },
+					{ position: { x: 416, y: 448 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 448, y: 448 }, size: { width: 32, height: 32 } },
+					{ position: { x: 480, y: 448 }, size: { width: 32, height: 32 } },
+				]
+			},
+			{	// tank_magenta_3
+				up: [
+					{ position: { x: 256, y: 480 }, size: { width: 32, height: 32 } },
+					{ position: { x: 288, y: 480 }, size: { width: 32, height: 32 } },
+				],
+				left: [
+					{ position: { x: 320, y: 480 }, size: { width: 32, height: 32 } },
+					{ position: { x: 352, y: 480 }, size: { width: 32, height: 32 } },
+				],
+				down: [
+					{ position: { x: 384, y: 480 }, size: { width: 32, height: 32 } },
+					{ position: { x: 416, y: 480 }, size: { width: 32, height: 32 } },
+				],
+				right: [
+					{ position: { x: 448, y: 480 }, size: { width: 32, height: 32 } },
+					{ position: { x: 480, y: 480 }, size: { width: 32, height: 32 } },
+				]
+			}
+		],
 	},
 	BULLET: {
 		up: { position: { x: 646, y: 204 }, size: { width: 6, height: 8 } },

@@ -107,7 +107,7 @@ export default class InputManager {
 			switch (ev.code) {
 				case EKeys.arrow_up:
 					ev.preventDefault();
-					if (this._game.getObjects().length > 1) {
+					if (this._game.objects.length > 1) {
 						if (this._cursorIndex - 1 < 0) {
 							this._cursorIndex = 2;
 						} else {
@@ -118,7 +118,7 @@ export default class InputManager {
 					break;
 				case EKeys.arrow_down:
 					ev.preventDefault();
-					if (this._game.getObjects().length > 1) {
+					if (this._game.objects.length > 1) {
 						if (this._cursorIndex + 1 > 2) {
 							this._cursorIndex = 0;
 						} else {

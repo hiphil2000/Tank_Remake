@@ -23,7 +23,7 @@ export default class TankObject extends MovingObject {
 
 	//#region constructor
 	constructor(game: Game, tankType: ETankType, position: Point, direction: EDirection, tankColor: ETankColor, tankLevel: number = 1, id?: string) {
-		super(game, EObjectType.TANK, position, direction, TANK_SPEED, id);
+		super(game, EObjectType.TANK, position, direction, TANK_SPEED, id != null ? id : Guid.newGuid());
 		this._tankType = tankType;
 		this._tankColor = tankColor;
 		this._tankLevel = tankLevel;
@@ -121,9 +121,9 @@ export default class TankObject extends MovingObject {
 	}
 
 	public destroy() {
+		this.remove();
 		this._game.startAnimation(this, EAnimationType.EXPLOSION_SMALL, null, (animation) => {
 			this._game.startAnimation(animation.animationPoint, EAnimationType.EXPLOSION_LARGE, null, () => {
-				this.remove();
 				if (this.id === MAIN_TANK_ID) {
 					this._game.spawnTank(this.tankType, false, 0);
 				} else {

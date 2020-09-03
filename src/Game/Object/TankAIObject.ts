@@ -111,11 +111,11 @@ export default class TankAIOBject extends TankObject {
 	}
 
 	public destroy() {
+		this.remove();
 		this._game.startAnimation(this, EAnimationType.EXPLOSION_SMALL, null, (animation) => {
 			this._game.startAnimation(animation.animationPoint, EAnimationType.EXPLOSION_LARGE, null, () => {
 				const scoreAnimation = ScoreToAnimation(EnemyScoreMap.get(this._enemyType));
 				this._game.startAnimation(animation.animationPoint, scoreAnimation, null, () => {
-					this.remove();
 					this._game.spawnTank(this.tankType);
 				});
 			});

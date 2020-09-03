@@ -28,3 +28,13 @@ html, body {
 #debugPalette > table td {
 	border: 1px solid #8C8c8C;
 }
+
+#li_track {
+	margin: 0 0 .125em 0;
+	padding: 0;
+	border: 1px solid #8c8c8c
+}
+
+#li_track > li {
+	display: inline;
+}
