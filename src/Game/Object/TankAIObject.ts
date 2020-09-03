@@ -8,10 +8,15 @@ import EAnimationType, { ScoreToAnimation } from "./Enum/EAnimationType";
 export interface IColorSequenceDefinition {
 	sequence: Array<ETankColor>;
 	delay: number;
-	lastChanged?: number;
 }
 
 export const ColorSequenceDefinitions: {[key: string]: Array<IColorSequenceDefinition>} = {
+	DEFAULT: [
+		{
+			sequence: [ETankColor.WHITE],
+			delay: -1,
+		}
+	],
 	ARMOURED: [	
 		{
 			sequence: [ETankColor.WHITE],
@@ -43,6 +48,7 @@ export default class TankAIOBject extends TankObject {
 	private _enemyType: EnemyType;
 	private _hasItem: boolean;
 	private _colorIndex: number;
+	public lastChanged: number;
 
 	constructor(game: Game, enemyType: EnemyType, hasItem: boolean, position: Point, direction: EDirection) {
 		let level: number;
@@ -70,17 +76,24 @@ export default class TankAIOBject extends TankObject {
 			ETankColor.WHITE,
 			level
 		);
+		this.lastChanged = 0;
 
 		this._enemyType = enemyType;
 		this._hasItem = hasItem;
 		this._colorIndex = 0;
 		this._hp = hp;
+		console.log(this.getColorDefinition());
+	}
+
+	get colorIndex(): number {
+		return this._colorIndex;
 	}
 
 	public nextColorIndex(): number {
 		const definition = this.getColorDefinition();
+
 		const maxIndex = definition.sequence.length;
-		if (this._colorIndex + 1 > maxIndex) {
+		if (this._colorIndex + 1 >= maxIndex) {
 			this._colorIndex = 0;
 		} else {
 			this._colorIndex++;
@@ -100,7 +113,7 @@ export default class TankAIOBject extends TankObject {
 			index = this._hp - 1;
 		}
 		
-		return ColorSequenceDefinitions[key][0];
+		return ColorSequenceDefinitions[key][index];
 	}
 
 	public hit() {

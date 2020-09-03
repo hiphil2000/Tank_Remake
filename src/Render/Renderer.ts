@@ -16,6 +16,7 @@ import EMenuType from "../Game/Menu/EMenuType";
 import ESystemSprite from "./Sprite/ESystemSprite";
 import EBlockType from "../Game/Object/Enum/EBlockType";
 import ETankType from "../Game/Object/Enum/ETankType";
+import TankAIOBject from "../Game/Object/TankAIObject";
 
 export const MAX_FPS = 60;
 export const MENU_MAX_FPS = 30;
@@ -224,7 +225,7 @@ export default class Renderer {
 						(object as BulletObject).move();
 						break;
 					case EObjectType.ANIMATION:
-						let animation = object as AnimationObject;
+						const animation = object as AnimationObject;
 						if (animation.expireTime < this._fps.now) {
 							animation.expire();
 						}
@@ -245,6 +246,18 @@ export default class Renderer {
 						}
 						animation.nextSpritePosition();
 						break;
+					case EObjectType.TANK:
+						const tank = object as TankObject;
+						if (tank instanceof TankAIOBject) {
+							const enemy = tank as TankAIOBject;
+							const definition = enemy.getColorDefinition();
+							if (this._fps.now - enemy.lastChanged > definition.delay) {
+								enemy.nextColorIndex();
+								enemy.lastChanged = this._fps.now;
+							}
+						}
+						break;
+						
 				}
 			})
 		}
@@ -567,7 +580,7 @@ export default class Renderer {
 			case EObjectType.TANK:
 				return 1;
 			case EObjectType.ANIMATION:
-				let animation = object as AnimationObject;
+				const animation = object as AnimationObject;
 				if (animation.animationType === EAnimationType.INVINCIBLE) {
 					return 2;
 				} else {

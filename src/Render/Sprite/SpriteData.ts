@@ -19,23 +19,25 @@ import TankAIOBject from "../../Game/Object/TankAIObject";
 export function getSpriteData(object: GameObject): SpriteDef {
 	switch (object.objectType) {
 		case EObjectType.TANK:
-			let tank = object as TankObject;
-			if (tank instanceof TankAIOBject) {
-				return SPRTIE_DEF.ENEMY[tank.tankColor][tank.tankLevel][tank.direction][tank.spritePosition];
+			const tank = object as TankObject;
+			if (tank instanceof TankAIOBject && (tank as TankAIOBject).colorIndex != undefined) {
+				const enemy = object as TankAIOBject;
+				const sequence = enemy.getColorDefinition().sequence;
+				return SPRTIE_DEF.ENEMY[sequence[enemy.colorIndex]][enemy.tankLevel][enemy.direction][enemy.spritePosition];
 			} else {
 				return SPRTIE_DEF.TANK[tank.tankColor][tank.tankLevel][tank.direction][tank.spritePosition];
 			}
 		case EObjectType.BULLET:
-			let bullet = object as BulletObject;
+			const bullet = object as BulletObject;
 			return SPRTIE_DEF.BULLET[bullet.direction];
 		case EObjectType.ANIMATION:
-			let animation = object as AnimationObject;
+			const animation = object as AnimationObject;
 			return SPRTIE_DEF.ANIMATION[animation.animationType][animation.spritePosition];
 		case EObjectType.BLOCK:
-			let block = object as BlockObject;
+			const block = object as BlockObject;
 			return SPRTIE_DEF.BLOCK[block.blockType][block.spritePosition];
 		case EObjectType.ITEM:
-			let item = object as ItemObject;
+			const item = object as ItemObject;
 			return SPRTIE_DEF.ITEM[item.itemType];
 	}
 }

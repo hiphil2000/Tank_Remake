@@ -170,6 +170,9 @@ export default class Game {
 					if (item.id === (object as BulletObject).parentId) {
 						return;
 					}
+					if (item.visible === false) {
+						return;
+					}
 				}
 			} else if (item.objectType === EObjectType.BULLET) {
 				if (object.objectType === EObjectType.TANK) {
@@ -381,7 +384,7 @@ export default class Game {
 					return;
 				}
 				this.createEnemyTank({
-					type: EnemyType.DEFAULT,
+					type: EnemyType.SPEED,
 					item: true
 				});
 			}
@@ -402,6 +405,7 @@ export default class Game {
 			tankLevel,
 			MAIN_TANK_ID
 		));
+		console.log(this.mainTank instanceof TankAIOBject);
 	}
 
 	private createEnemyTank(tankDefinition: ITankDefinition) {
