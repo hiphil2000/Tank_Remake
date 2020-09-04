@@ -112,6 +112,9 @@ export default class TankAIOBject extends TankObject {
 		} else if (this._enemyType === EnemyType.ARMOURED) {
 			key = this._enemyType.toString();
 			index = this._hp - 1;
+		} else {
+			key = 'DEFAULT';
+			index = 0;
 		}
 		
 		return ColorSequenceDefinitions[key][index];

@@ -3,7 +3,7 @@ const enum ETankType {
 	ENEMY_TANK = 'ENEMY_TANK',
 }
 
-const enum EnemyType {
+enum EnemyType {
 	DEFAULT = 'DEFAULT',
 	SPEED = 'SPEED',
 	POWER = 'POWER',

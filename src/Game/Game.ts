@@ -3,7 +3,7 @@ import IGameData, { IPlayerData } from "./GameData/IGameData";
 import GameObject from "./Object/GameObject";
 import TankObject, { ETankColor } from "./Object/TankObject";
 import EGameType from "./GameData/EGameType";
-import ILevel from "./Level/ILevel";
+import ILevel, { getTotalOfTankGroup } from "./Level/ILevel";
 import EDirection from "../Utils/EDirection";
 import { BlockCollisionTest, ObjectCollisionTest, RectangleCollisionTest } from "../Utils/CollisionTest";
 import SPRTIE_DEF from "../Render/Sprite/SpriteDefinition";
@@ -14,13 +14,13 @@ import AnimationObject from "./Object/AnimationObject";
 import EAnimationType, { AnimationValue, AnimationDefaults } from "./Object/Enum/EAnimationType";
 import BlockObject from "./Object/BlockObject";
 import ETankType, { EnemyType } from "./Object/Enum/ETankType";
-import { getSpriteData, getObjectSize } from "../Render/Sprite/SpriteData";
+import { getSpriteData, getObjectSize, getSpriteSize } from "../Render/Sprite/SpriteData";
 import EMenuType from "./Menu/EMenuType";
 import EBlockType from "./Object/Enum/EBlockType";
 import DefaultLevels from "./Level/DefaultLevels";
 import InputManager from "./InputManager/InputManager";
 import IKeyState from "./InputManager/IKeyState";
-import { getRandomRange, getRandomEnum } from "../Utils/Utils";
+import { getRandomRange, getRandomEnum, deepClone } from "../Utils/Utils";
 import TankAIOBject from "./Object/TankAIObject";
 import ITankDefinition from "./Level/ITankDefinition";
 import EItemType from "./Object/Enum/EItemType";
@@ -44,6 +44,8 @@ export const TANK_SPAWN_POINT = {
 export default class Game {
 	public debug: boolean;
 	private _pause: boolean;
+	private _enemyPause: boolean;
+
 	private _renderer: Renderer;
 	private _inputManager: InputManager;
 	private _gameData: IGameData;
@@ -274,9 +276,9 @@ export default class Game {
 		this._currentMenu = EMenuType.STAGE;
 		this._objects = [];
 
-		this._gameData.levelData = DefaultLevels.find(level => {
+		this._gameData.levelData = deepClone(DefaultLevels.find(level => {
 			return level.levelId === levelId;
-		});
+		}));
 		
 		this.showCurtain();
 
@@ -412,10 +414,8 @@ export default class Game {
 				if (tanks.length >= MAXIMUM_TANKS) {
 					return;
 				}
-				this.createEnemyTank({
-					type: EnemyType.ARMOURED,
-					item: true
-				});
+
+				this.createEnemyTank();
 			}
 		}
 	}
@@ -452,23 +452,83 @@ export default class Game {
 		console.log(this.mainTank instanceof TankAIOBject);
 	}
 
-	private createEnemyTank(tankDefinition: ITankDefinition) {
+	private createEnemyTank() {
 		const tankSize = getObjectSize(EObjectType.TANK);
 		const spawnPoints = TANK_SPAWN_POINT.ENEMY_TANK;
+		const availablePoints: Array<Point> = [];
+
+		const objects = this.objects.filter(object => { return object.objectType === EObjectType.TANK });
+		for(let i = 0; i < spawnPoints.length; i++) {
+			let success = true;
+			for(let j = 0; j < objects.length; j++) {
+				if (RectangleCollisionTest(
+					this.translateBlockPosition(spawnPoints[i]),
+					tankSize,
+					objects[j].position,
+					tankSize,
+				) == true) {
+					success = false;
+				}
+			}
+			if (success) {
+				availablePoints.push(spawnPoints[i]);
+			}
+		}
 		
-		const idx = getRandomRange(0, 2);
-		const position = {
-			x: DRAWING_CONST.sizes.frame.left + spawnPoints[idx].x * tankSize.width,
-			y: DRAWING_CONST.sizes.frame.top + spawnPoints[idx].y * tankSize.height
-		};
+		if (availablePoints.length <= 0) {
+			this._lastSpawn = performance.now();
+			return;
+		}
+		const idx = getRandomRange(0, availablePoints.length - 1);
+		const position = this.translateBlockPosition(availablePoints[idx]);
+
+		const next = this.nextTank();
+		if (next == undefined) {
+			return;
+		}
 		this.insertObject(new TankAIOBject(
 			this,
-			tankDefinition.type,
-			tankDefinition.item ? tankDefinition.item : false,
+			next.type,
+			next.item,
 			position,
 			EDirection.down
 		));
+	}
 
+	private translateBlockPosition(point: Point): Point {
+		const blockSize = getObjectSize(EObjectType.BLOCK);
+		return {
+			x: DRAWING_CONST.sizes.frame.left + point.x * blockSize.width,
+			y: DRAWING_CONST.sizes.frame.top + point.y * blockSize.height
+		};
+	}
+
+	private nextTank(): ITankDefinition {
+		const tankGroups = this._gameData.levelData.tanks;
+
+		let type: EnemyType;
+		let sum = 0;
+		for(let i = 0; i < tankGroups.length; i++) {
+			let total = getTotalOfTankGroup(tankGroups[i]);
+			if (total > 0 && type == undefined) {
+				const availableTypes: Array<EnemyType> = [];
+				Object.values(EnemyType).forEach(type => {
+					if (this._gameData.levelData.tanks[i][type] > 0) {
+						availableTypes.push(type);
+					}
+				});
+				type = availableTypes[getRandomRange(0, availableTypes.length - 1)];
+				this._gameData.levelData.tanks[i][type]--;
+			}
+			sum += total;
+		}
+
+		if (sum > 0) {
+			return {
+				type: type,
+				item: (20 - sum) % 5 === 0 && 20 - sum > 0
+			};
+		}
 	}
 	//#endregion
 	
