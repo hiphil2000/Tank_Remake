@@ -17,14 +17,14 @@ import ETankType, { EnemyType } from "./Object/Enum/ETankType";
 import { getSpriteData, getObjectSize, getSpriteSize } from "../Render/Sprite/SpriteData";
 import EMenuType from "./Menu/EMenuType";
 import EBlockType from "./Object/Enum/EBlockType";
-import DefaultLevels from "./Level/DefaultLevels";
+import DefaultLevels from "./Level/DefaultLevels/DefaultLevels";
 import InputManager from "./InputManager/InputManager";
 import IKeyState from "./InputManager/IKeyState";
 import { getRandomRange, getRandomEnum, deepClone } from "../Utils/Utils";
 import TankAIOBject from "./Object/TankAIObject";
 import ITankDefinition from "./Level/ITankDefinition";
 import EItemType from "./Object/Enum/EItemType";
-import ItemObject from "./Object/ItemObject";
+import ItemObject, { ITEM_WATCH_TIME } from "./Object/ItemObject";
 
 export const MAIN_TANK_ID = 'MAIN';
 export const MAXIMUM_TANKS = 4;
@@ -44,7 +44,10 @@ export const TANK_SPAWN_POINT = {
 export default class Game {
 	public debug: boolean;
 	private _pause: boolean;
-	private _enemyPause: boolean;
+	private _enemyPause: {
+		pause: boolean,
+		expireTime: number
+	};
 
 	private _renderer: Renderer;
 	private _inputManager: InputManager;
@@ -59,6 +62,10 @@ export default class Game {
 		this._objects = [];
 		this._lastSpawn = performance.now();
 		this._pause = false;
+		this._enemyPause = {
+			expireTime: 0,
+			pause: false
+		};
 		this._renderer = new Renderer(this, screen, sprite_main_src, sprite_title_src);
 		this._inputManager = new InputManager(this);
 		screen.focus();
@@ -81,6 +88,14 @@ export default class Game {
 
 	get pause(): boolean {
 		return this._pause;
+	}
+
+	get enemyPause(): boolean {
+		return this._enemyPause.pause;
+	}
+
+	get enemyPauseExpire(): number {
+		return this._enemyPause.expireTime;
 	}
 
 	set pause(pause: boolean) {
@@ -327,6 +342,13 @@ export default class Game {
 			EAnimationType.PAUSE,
 		)
 	}
+	
+	public setEnemyPause(pause: boolean) {
+		this._enemyPause.pause = pause;
+		if (pause) {
+			this._enemyPause.expireTime = performance.now() + ITEM_WATCH_TIME;
+		}
+	}
 
 	public gameover() {
 		if (this.gameData.gameOver) {
@@ -348,6 +370,9 @@ export default class Game {
 	}
 
 	public showResultScreen() {
+		this._currentMenu = EMenuType.RESULT;
+		this._objects = [];
+
 
 	}
 
@@ -449,7 +474,6 @@ export default class Game {
 			tankLevel,
 			MAIN_TANK_ID
 		));
-		console.log(this.mainTank instanceof TankAIOBject);
 	}
 
 	private createEnemyTank() {

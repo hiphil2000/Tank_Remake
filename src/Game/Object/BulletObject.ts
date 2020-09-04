@@ -62,6 +62,7 @@ export default class BulletObject extends MovingObject {
 	}
 
 	explode(animation: boolean) {
+		this.remove();
 		let animationPosition: Point;
 		let size = getSpriteSize(this);
 
@@ -79,7 +80,6 @@ export default class BulletObject extends MovingObject {
 
 		if (animation) {
 			this._game.startAnimation(this, EAnimationType.EXPLOSION_SMALL);
-			this.remove();
 		}
 		this._game.log(`BULLET [${this.id}] EXPLODED.`);
 	}

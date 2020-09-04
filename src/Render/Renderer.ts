@@ -18,6 +18,8 @@ import EBlockType from "../Game/Object/Enum/EBlockType";
 import ETankType from "../Game/Object/Enum/ETankType";
 import TankAIOBject from "../Game/Object/TankAIObject";
 
+import "../Resources/PixelEmulator-xq08.ttf";
+
 export const MAX_FPS = 60;
 export const MENU_MAX_FPS = 30;
 export const DRAWING_CONST = {
@@ -219,6 +221,10 @@ export default class Renderer {
 				mainTank.move();
 			}
 		}
+	
+		if (this._game.enemyPauseExpire < this._fps.now) {
+			this._game.setEnemyPause(false);
+		}
 
 		const objects = this._game.objects;
 		if (objects != undefined) {
@@ -258,9 +264,12 @@ export default class Renderer {
 								enemy.nextColorIndex();
 								enemy.lastChanged = this._fps.now;
 							}
+
+							if (tank.visible && this._game.enemyPause == false) {
+								tank.action();
+							}
 						}
 						break;
-						
 				}
 			})
 		}
@@ -313,7 +322,6 @@ export default class Renderer {
 								this.drawStageNumber(ctx, this._game.gameData.levelData.levelId as number)
 							} else if (progress < 1) {
 								let closingProgress = progress - .75;
-								console.log();
 								ctx.fillStyle = DRAWING_CONST.colors.background_frame;
 								ctx.fillRect(
 									0,

@@ -4,7 +4,8 @@ enum EItemType {
 	STAR = 'STAR',
 	BOMB = 'BOMB',
 	TANK = 'TANK',
-	PISTOL = 'PISTOL'
+	PISTOL = 'PISTOL',
+	SHOVEL = 'SHOVEL'
 }
 
 export default EItemType;

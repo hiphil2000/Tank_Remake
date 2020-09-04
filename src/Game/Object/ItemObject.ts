@@ -8,6 +8,8 @@ import TankObject from "./TankObject";
 import EAnimationType from "./Enum/EAnimationType";
 import ETankType from "./Enum/ETankType";
 
+export const ITEM_WATCH_TIME = 3000;
+
 export default class ItemObject extends GameObject {
 	public itemType: EItemType;
 
@@ -18,6 +20,9 @@ export default class ItemObject extends GameObject {
 
 	hit(eventOrigin: GameObject): void {
 		const origin = eventOrigin as TankObject
+		if (origin.tankType === ETankType.ENEMY_TANK) {
+			return;
+		}
 		let otherTanks = this._game.objects.filter(x => {
 			const tank = x as TankObject;
 			return tank.tankType === ETankType.ENEMY_TANK;
@@ -41,7 +46,10 @@ export default class ItemObject extends GameObject {
 				// life 1 up
 				break;
 			case EItemType.WATCH:
-				// stop enemy tanks
+				this._game.setEnemyPause(true);
+				break;
+			case EItemType.SHOVEL:
+				// change all bricks into iron
 				break;
 		}
 

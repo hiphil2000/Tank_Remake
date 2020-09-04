@@ -1,6 +1,6 @@
 import EKeys from "../Game/InputManager/EKeys";
 
-const enum EDirection {
+enum EDirection {
 	up = 'up',
 	right = 'right',
 	down = 'down',

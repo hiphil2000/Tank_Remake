@@ -114,7 +114,6 @@ export default class InputManager {
 							this._cursorIndex--;
 						}
 					}
-					console.log(this.cursorIndex);
 					break;
 				case EKeys.arrow_down:
 					ev.preventDefault();

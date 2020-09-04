@@ -18,7 +18,7 @@ export default class TankObject extends MovingObject {
 	private _tankColor: ETankColor;
 	private _tankLevel: number;
 	private _bullets: Array<string>;	// holds bullet's id
-	private _lastFired: number;
+	protected _lastFired: number;
 
 	private _isInvincible: boolean = false;
 
