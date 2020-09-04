@@ -11,7 +11,8 @@ const enum EAnimationType {
 	GAMEOVER = 'GAMEOVER',
 	PAUSE = 'PAUSE',
 	TITLE = 'TITLE',
-	CURSOR = 'CURSOR'
+	CURSOR = 'CURSOR',
+	CURTAIN = 'CURTAIN'
 }
 
 export function ScoreToAnimation(score: number): EAnimationType {
@@ -99,6 +100,11 @@ export const AnimationDefaults = {
 	},
 	CURSOR: {
 		duration: 50,
+		frameRate: 25,
+		loop: true
+	},
+	CURTAIN: {
+		duration: 3000,
 		frameRate: 25,
 		loop: true
 	}

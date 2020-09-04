@@ -20,10 +20,11 @@ import EBlockType from "./Object/Enum/EBlockType";
 import DefaultLevels from "./Level/DefaultLevels";
 import InputManager from "./InputManager/InputManager";
 import IKeyState from "./InputManager/IKeyState";
-import { getRandomRange } from "../Utils/Utils";
+import { getRandomRange, getRandomEnum } from "../Utils/Utils";
 import TankAIOBject from "./Object/TankAIObject";
 import ITankDefinition from "./Level/ITankDefinition";
-
+import EItemType from "./Object/Enum/EItemType";
+import ItemObject from "./Object/ItemObject";
 
 export const MAIN_TANK_ID = 'MAIN';
 export const MAXIMUM_TANKS = 4;
@@ -239,37 +240,52 @@ export default class Game {
 	//#endregion
 	//#endregion
 
-	public newGame(playerCount: number, gameType?: EGameType, level?: ILevel) {
+	public newGame(playerCount: number, levelId?: number) {
 		this._currentMenu = EMenuType.GAME;
 		this._objects = [];
-		if (gameType == undefined) {
-			gameType = EGameType.PVE;
-		}
-		if (level == undefined) {
-			level = DefaultLevels[0];
-		}
+		this._gameData = {} as IGameData;
+
+		const gamedata = this._gameData;
 		const playerData = new Array<IPlayerData>();
 		for(let i = 0; i < playerCount; i++) {
 			playerData.push({
 				life: 5,
 				score: 0,
-				destroedTank: {}
+				destroyedTank: {}
 			} as IPlayerData);
 		}
 
-		this._gameData = {
-			gameType: gameType,
-			playerData: playerData,
-			levelData: level,
-			gameOver: false
-		} as IGameData
+		gamedata.gameType = EGameType.PVE;
+		gamedata.playerData = playerData;
+		gamedata.gameOver = false;
+
+		if (levelId != undefined) {
+			this.newLevel(levelId)
+		} else {
+			if (typeof gamedata.levelData?.levelId === "number") {
+				this.newLevel(gamedata.levelData.levelId + 1);
+			} else {
+				this.newLevel(1);
+			}
+		}
+	}
+
+	public newLevel(levelId: number) {
+		this._currentMenu = EMenuType.STAGE;
+		this._objects = [];
+
+		this._gameData.levelData = DefaultLevels.find(level => {
+			return level.levelId === levelId;
+		});
+		
+		this.showCurtain();
 
 		this.spawnTank(ETankType.PLAYER_TANK, true, 0);
-		if (playerCount > 1) {
+		if (this.gameData.playerData.length > 1) {
 			this.spawnTank(ETankType.PLAYER_TANK, true, 1);
 		}
 		
-		level.blocks.forEach(block => {
+		this._gameData.levelData.blocks.forEach(block => {
 			this.insertObject(
 				new BlockObject(
 					this,
@@ -282,6 +298,19 @@ export default class Game {
 				)
 			)
 		});
+	}
+
+	private showCurtain() {
+		this._currentMenu = EMenuType.STAGE;
+		this._objects = [];
+		this.startAnimation(
+			{ x: 0, y: 0 },
+			EAnimationType.CURTAIN,
+			null,
+			() => {
+				this._currentMenu = EMenuType.GAME;
+			}
+		)
 	}
 
 	public setPause() {
@@ -384,11 +413,26 @@ export default class Game {
 					return;
 				}
 				this.createEnemyTank({
-					type: EnemyType.SPEED,
+					type: EnemyType.ARMOURED,
 					item: true
 				});
 			}
 		}
+	}
+
+	public spawnItem(itemType?: EItemType, position?: Point) {
+		if (itemType == undefined) {
+			itemType = getRandomEnum(EItemType);
+		}
+		if (position == undefined) {
+			position = this._renderer.randomPoint(getObjectSize(EObjectType.ITEM));
+		}
+
+		this.insertObject(new ItemObject(
+			this,
+			itemType,
+			position
+		));
 	}
 
 	private createPlayerTank(position: Point, direction: EDirection, tankColor: ETankColor, tankLevel: number) {

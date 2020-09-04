@@ -8,6 +8,7 @@ import SPRTIE_DEF, { SpriteDef } from "../../Render/Sprite/SpriteDefinition";
 import { Guid } from "../../Utils/Utils";
 import EAnimationType from "./Enum/EAnimationType";
 import ETankType, { EnemyType } from "./Enum/ETankType";
+import GameObject from "./GameObject";
 
 export const TANK_SPEED = 2;
 export const TANK_FIRE_DELAY = 100;
@@ -87,7 +88,7 @@ export default class TankObject extends MovingObject {
 		this.nextSpritePosition();
 	}
 
-	hit() {
+	hit(eventOrigin: GameObject) {
 		if (this._isInvincible) {
 			return;
 		}

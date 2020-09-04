@@ -5,7 +5,7 @@ import GameObject from "../Object/GameObject";
 export interface IPlayerData {
 	life: number,
 	score: number,
-	destroedTank: ITankGroup
+	destroyedTank: ITankGroup
 }
 export default interface IGameData {
 	gameType: EGameType,

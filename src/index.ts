@@ -40,7 +40,7 @@ debug_btn.addEventListener('click', ev => {
 mainTank_level.addEventListener("change", () => {updateTank()});
 mainTank_color.addEventListener("change", () => {updateTank()});
 mainTank_invincible.addEventListener("click", () => { game.mainTank.invincible(); });
-mainTank_hit.addEventListener("click", () => { game.mainTank.hit(); });
+mainTank_hit.addEventListener("click", () => { game.mainTank.destroy(); });
 let objectFinder = setInterval(() => {
 	objects.innerHTML = 
 	`

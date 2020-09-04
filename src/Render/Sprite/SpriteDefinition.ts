@@ -767,8 +767,12 @@ const SPRTIE_DEF = {
 		CURSOR: [
 			{ position: { x: 192, y: 0 }, size: { width: 32, height: 32 } },
 			{ position: { x: 224, y: 0 }, size: { width: 32, height: 32 } },
+		],
+		CURTAIN: [
+			{
+				position: { x: 0, y: 0}, size: { width: 0, height: 0 }
+			}
 		]
-
 	},
 	ITEM: {
 		HELMET: {

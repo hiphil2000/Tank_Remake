@@ -6,6 +6,7 @@ import { Point } from "../../Utils/UnitTypes";
 import { Guid } from "../../Utils/Utils";
 import TankObject from "./TankObject";
 import EAnimationType from "./Enum/EAnimationType";
+import ETankType from "./Enum/ETankType";
 
 export default class ItemObject extends GameObject {
 	public itemType: EItemType;
@@ -16,27 +17,28 @@ export default class ItemObject extends GameObject {
 	}
 
 	hit(eventOrigin: GameObject): void {
-		let mainTank = this._game.mainTank;
+		const origin = eventOrigin as TankObject
 		let otherTanks = this._game.objects.filter(x => {
-			return x.objectType === EObjectType.TANK && x != mainTank;
+			const tank = x as TankObject;
+			return tank.tankType === ETankType.ENEMY_TANK;
 		}) as Array<TankObject>;
 		switch(this.itemType) {
 			case EItemType.BOMB:
 				otherTanks.forEach(tank => {
-					tank.hit();
+					tank.destroy();
 				});
 				break;
 			case EItemType.HELMET:
-				mainTank.invincible();
+				origin.invincible();
 				break;
 			case EItemType.PISTOL:
 				// point up
 				break;
 			case EItemType.STAR:
-				mainTank.levelup();
+				origin.levelup();
 				break;
 			case EItemType.TANK:
-				// 1UP
+				// life 1 up
 				break;
 			case EItemType.WATCH:
 				// stop enemy tanks

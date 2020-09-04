@@ -5,7 +5,7 @@ import SPRTIE_DEF, { SpriteDef } from "./Sprite/SpriteDefinition";
 import TankObject from "../Game/Object/TankObject";
 import BulletObject from "../Game/Object/BulletObject";
 import AnimationObject from "../Game/Object/AnimationObject";
-import EAnimationType from "../Game/Object/Enum/EAnimationType";
+import EAnimationType, { AnimationDefaults } from "../Game/Object/Enum/EAnimationType";
 import BlockObject from "../Game/Object/BlockObject";
 import ItemObject from "../Game/Object/ItemObject";
 import { getSpriteData, getSystemSprite, getSpriteSize, getObjectSize, getAnimationSize } from "./Sprite/SpriteData";
@@ -126,6 +126,9 @@ export default class Renderer {
 					break;
 				case EMenuType.GAME:
 					this.renderGame(ctx);
+					break;
+				case EMenuType.STAGE:
+					this.renderStage(ctx);
 					break;
 				case EMenuType.CONSTRUCT:
 					break;
@@ -263,6 +266,112 @@ export default class Renderer {
 		}
 
 		this._game.spawnTank(ETankType.ENEMY_TANK);
+	}
+
+	private renderStage(ctx: CanvasRenderingContext2D) {
+		this.drawCurtain(ctx);
+	}
+
+	private drawCurtain(ctx: CanvasRenderingContext2D) {
+		ctx.save()
+		const objects = this._game.objects;
+		objects.forEach(object => {
+			switch(object.objectType) {
+				case EObjectType.ANIMATION:
+					const animation = object as AnimationObject;
+					switch(animation.animationType) {
+						case EAnimationType.CURTAIN:
+							const defaults = AnimationDefaults.CURTAIN;
+							const original_start = animation.expireTime - defaults.duration;
+							const elapsed = this._fps.now - original_start;
+							const progress = elapsed / defaults.duration;
+							const screen = {
+								width: ctx.canvas.clientWidth,
+								height: ctx.canvas.clientHeight
+							}
+							ctx.fillStyle = DRAWING_CONST.colors.background_frame;
+							if (progress < .25) {
+								ctx.fillRect(
+									0,
+									0,
+									screen.width,
+									screen.height * progress * 2
+								);
+								ctx.fillRect(
+									0,
+									screen.height / 2 + screen.height / 2 - screen.height * progress * 2,
+									screen.width,
+									screen.height * progress * 2
+								);
+							} else if (progress < .75) {
+								ctx.fillRect(
+									0,
+									0,
+									screen.width,
+									screen.height
+								);
+								this.drawStageNumber(ctx, this._game.gameData.levelData.levelId as number)
+							} else if (progress < 1) {
+								let closingProgress = progress - .75;
+								console.log();
+								ctx.fillStyle = DRAWING_CONST.colors.background_frame;
+								ctx.fillRect(
+									0,
+									0,
+									screen.width,
+									screen.height / 2 - (screen.height * (closingProgress * 2))
+								);
+								ctx.fillRect(
+									0,
+									screen.height / 2 + (screen.height * (closingProgress * 2)),
+									screen.width,
+									screen.height
+								);
+							} else {
+								animation.expire();
+							}
+							ctx.restore();
+							break;
+					}
+					break;
+			}
+		})
+	}
+
+	private drawStageNumber(ctx: CanvasRenderingContext2D, number: number) {
+		const stage = SPRTIE_DEF.SYSTEM.STAGE;
+		const numbers = [];
+		const number_str = number.toString();
+		for(let i = number_str.length -1; i >= 0; i--) {
+			numbers.push(SPRTIE_DEF.SYSTEM.NUMBER[parseInt(number_str.charAt(i))]);
+		}
+
+		ctx.drawImage(
+			this._mainSprite,
+			stage.position.x,
+			stage.position.y,
+			stage.size.width,
+			stage.size.height,
+			ctx.canvas.clientWidth / 2 - stage.size.width * (4 / 5),
+			ctx.canvas.clientHeight / 2 - stage.size.height,
+			stage.size.width,
+			stage.size.height
+		);
+		
+
+		numbers.forEach((number, index) => {
+			ctx.drawImage(
+				this._mainSprite,
+				number.position.x,
+				number.position.y,
+				number.size.width,
+				number.size.height,
+				ctx.canvas.clientWidth / 2 + number.size.width * (4 - index - 1),
+				ctx.canvas.clientHeight / 2 - number.size.height,
+				number.size.width,
+				number.size.height
+			);
+		})
 	}
 
 	private checkKeyStateSync(): boolean {

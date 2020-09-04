@@ -1,4 +1,4 @@
-const enum EItemType {
+enum EItemType {
 	HELMET = 'HELMET',
 	WATCH = 'WATCH',
 	STAR = 'STAR',

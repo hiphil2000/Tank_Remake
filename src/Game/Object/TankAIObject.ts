@@ -4,6 +4,7 @@ import Game from "../Game";
 import { Point } from "../../Utils/UnitTypes";
 import EDirection from "../../Utils/EDirection";
 import EAnimationType, { ScoreToAnimation } from "./Enum/EAnimationType";
+import GameObject from "./GameObject";
 
 export interface IColorSequenceDefinition {
 	sequence: Array<ETankColor>;
@@ -116,15 +117,22 @@ export default class TankAIOBject extends TankObject {
 		return ColorSequenceDefinitions[key][index];
 	}
 
-	public hit() {
+	public hit(eventOrigin: GameObject) {
 		this._hp -= 1;
 		if (this._hp <= 0) {
-			this.destroy();
+			this.destroy(eventOrigin);
 		}
 	}
 
-	public destroy() {
+	public destroy(eventOrigin?: GameObject) {
 		this.remove();
+		if (this._hasItem) {
+			this._game.spawnItem();
+		}
+		if (eventOrigin && eventOrigin instanceof TankObject) {
+			const player = eventOrigin as TankObject;
+			// TODO player 
+		}
 		this._game.startAnimation(this, EAnimationType.EXPLOSION_SMALL, null, (animation) => {
 			this._game.startAnimation(animation.animationPoint, EAnimationType.EXPLOSION_LARGE, null, () => {
 				const scoreAnimation = ScoreToAnimation(EnemyScoreMap.get(this._enemyType));

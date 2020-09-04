@@ -51,3 +51,10 @@ export function removeDuplicate(array: Array<any>): Array<any> {
 	let set = new Set(array);
 	return [...set];
 }
+
+export function getRandomEnum<T>(anEnum: T): T[keyof T] {
+	const enumValues = Object.values(anEnum)
+	const randomIndex = getRandomRange(0, enumValues.length - 1);
+	const randomEnumValue = enumValues[randomIndex]
+	return randomEnumValue;
+}

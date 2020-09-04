@@ -3,7 +3,8 @@ const enum EObjectType {
 	BLOCK = 'BLOCK',
 	BULLET = 'BULLET',
 	ANIMATION = 'ANIMATION',
-	ITEM = 'ITEM'
+	ITEM = 'ITEM',
+	SYSTEM_SPRITE = 'SYSTEM_SPRITE'
 }
 
 export default EObjectType;
