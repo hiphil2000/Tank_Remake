@@ -508,6 +508,10 @@ export default class Game {
 
 		const next = this.nextTank();
 		if (next == undefined) {
+			const enemy = objects.find(x => {return (x as TankAIOBject).tankType === ETankType.ENEMY_TANK});
+			if (enemy == undefined) {
+				this.newLevel(this.gameData.levelData.levelId + 1);
+			}
 			return;
 		}
 		this.insertObject(new TankAIOBject(

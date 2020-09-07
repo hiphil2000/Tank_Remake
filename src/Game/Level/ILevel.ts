@@ -26,7 +26,7 @@ export function getTotalOfTankGroup(group: ITankGroup) {
 }
 
 export default interface ILevel {
-	levelId: string | number,
+	levelId: number,
 	levelName: string,
 	tanks: Array<ITankGroup>,
 	blocks: Array<IBlockDefinition>
